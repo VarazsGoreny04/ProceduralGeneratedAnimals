@@ -5,11 +5,11 @@ class Point {
 	}
 
 	static add(a, b) {
-		return new Point(b.x + a.x, b.y + a.y);
+		return new Point(a.x + b.x, a.y + b.y);
 	}
 
 	static subtract(a, b) {
-		return new Point(b.x - a.x, b.y - a.y);
+		return new Point(a.x - b.x, a.y - b.y);
 	}
 
 	static multiply(v, s) {
@@ -31,13 +31,26 @@ class Point {
 	static normalize(v) {
 		return Point.divide(v, Point.magnitude(v));
 	}
+
+	static normalLeft(v) {
+		return new Point(-v.y, v.x);
+	}
+
+	static normalRight(v) {
+		return new Point(v.y, -v.x);
+	}
+
+	static mouse() {
+		return new Point(mouseX, mouseY);
+	}
 }
 
 class Bodypart {
-	constructor(origin, segmentDistance, skinDistance, nextSegment) {
+	constructor(origin, segmentDistance, skinRadius, prevSegment, nextSegment) {
 		this.origin = origin;
 		this.segmentDistance = segmentDistance;
-		this.skinDistance = skinDistance;
+		this.skinRadius = skinRadius;
+		this.prevSegment = prevSegment;
 		this.nextSegment = nextSegment;
 	}
 
@@ -50,8 +63,7 @@ class Bodypart {
 	}
 
 	step(speedInPixels) {
-		const mouse = new Point(mouseX, mouseY);
-		const vectorToMouse = Point.subtract(this.origin, mouse);
+		const vectorToMouse = Point.subtract(Point.mouse(), this.origin);
 
 		if (Point.magnitude(vectorToMouse) < speedInPixels)
 			return;
@@ -64,24 +76,47 @@ class Bodypart {
 
 	static pullNext(bodypart) {
 		if (bodypart.nextSegment instanceof Bodypart) {
-			const vector = Point.subtract(bodypart.origin, bodypart.nextSegment.origin);
+			const vector = Point.subtract(bodypart.nextSegment.origin, bodypart.origin);
 
 			bodypart.nextSegment.origin = Point.add(bodypart.origin, Point.multiply(Point.normalize(vector), bodypart.nextSegment.segmentDistance));
 
 			Bodypart.pullNext(bodypart.nextSegment);
 		}
 	}
+
+	static getFrontVector(bodypart) {
+		let prev = bodypart.prevSegment;
+		let next = bodypart.nextSegment;
+
+		if (!(prev instanceof Bodypart || next instanceof Bodypart))
+			throw "Not enough bodyparts!";
+
+		if (!(prev instanceof Bodypart))
+			prev = bodypart;
+		if (!(next instanceof Bodypart))
+			next = bodypart;
+
+		const vector = Point.subtract(prev.origin, next.origin);
+
+		return Point.multiply(Point.normalize(vector), bodypart.skinRadius / 2);
+	}
 }
 
 class RadiusDiscriptor {
 	constructor(segmentDistance, skinRadius) {
 		this.segmentDistance = segmentDistance;
-		this.skinDistance = skinRadius;
+		this.skinRadius = skinRadius;
 	}
 }
 
 function setupAnimal(startingPoint, radiusDiscriptorArray) {
-	const result = new Bodypart(startingPoint, radiusDiscriptorArray[0].segmentDistance, radiusDiscriptorArray[0].skinDistance, undefined);
+	const result = new Bodypart(
+		startingPoint,
+		radiusDiscriptorArray[0].segmentDistance,
+		radiusDiscriptorArray[0].skinRadius,
+		undefined,
+		undefined
+	);
 	let current = result;
 	let next;
 
@@ -89,27 +124,64 @@ function setupAnimal(startingPoint, radiusDiscriptorArray) {
 		next = new Bodypart(
 			new Point(current.origin.x - radiusDiscriptorArray[index].segmentDistance, current.origin.y),
 			radiusDiscriptorArray[index].segmentDistance,
-			radiusDiscriptorArray[index].skinDistance,
+			radiusDiscriptorArray[index].skinRadius,
 			undefined
 		);
 
 		current.nextSegment = next;
+		next.prevSegment = current;
 		current = next;
 	}
 
 	return result
 }
 
-function drawAnimal(snake) {
-	background(100, 100, 100);
-	stroke(255);
-	fill(0, 0, 0, 0);
-
+function drawAnimal(animal) {
 	//console.log("Head");
-	for (const bodypart of snake) {
+	for (const bodypart of animal) {
 		//console.log(bodypart.origin);
-		ellipse(bodypart.origin.x, bodypart.origin.y, bodypart.skinDistance);
+		ellipse(bodypart.origin.x, bodypart.origin.y, bodypart.skinRadius);
 	}
+}
+
+function getPointsOfAnimal(animal) {
+	const left = [];
+	const right = [];
+
+	for (const bodypart of animal) {
+		let front = Bodypart.getFrontVector(bodypart);
+		left.push(Point.add(bodypart.origin, Point.normalLeft(front)));
+		right.push(Point.add(bodypart.origin, Point.normalRight(front)));
+	}
+
+	return right.reverse().concat([Point.add(animal.origin, Bodypart.getFrontVector(animal))]).concat(left);
+}
+
+function drawLoop(points) {
+	if (points.length < 1)
+		return;
+
+	beginShape();
+	curveVertex(points[0].x, points[0].y);
+	for (const point of points)
+		curveVertex(point.x, point.y);
+	curveVertex(points[0].x, points[0].y);
+	curveVertex(points[0].x, points[0].y);
+	endShape();
+}
+
+function animationLoop(animal, speedInPixels) {
+	background(100, 100, 100);
+
+	stroke(255);
+	fill(255, 0, 0, 155);
+
+	animal.step(speedInPixels);
+
+	const points = getPointsOfAnimal(animal);
+	drawLoop(points);
+
+	//drawAnimal(animal);
 }
 
 function setup() {
@@ -204,5 +276,5 @@ function setup() {
 	createCanvas(1400, 700);
 
 	drawAnimal(animal);
-	setInterval(() => { animal.step(speedInPixels); drawAnimal(animal); }, Math.floor(1000 / FPS));
+	setInterval(() => { animationLoop(animal, speedInPixels); }, Math.floor(1000 / FPS));
 }
