@@ -40,16 +40,25 @@ class Point {
 		return new Point(v.y, -v.x);
 	}
 
+	static rotateRadian(v, radian) {
+		return new Point(cos(radian) * v.x - sin(radian) * v.y, sin(radian) * v.x + cos(radian) * v.y);
+	}
+
+	static rotateDegree(v, degree) {
+		return Point.rotate(radians(v, degree));
+	}
+
 	static mouse() {
 		return new Point(mouseX, mouseY);
 	}
 }
 
 class Bodypart {
-	constructor(origin, segmentDistance, skinRadius, prevSegment, nextSegment) {
+	constructor(origin, segmentDistance, skinRadius, plusPoints, prevSegment, nextSegment) {
 		this.origin = origin;
 		this.segmentDistance = segmentDistance;
 		this.skinRadius = skinRadius;
+		this.plusPoints = plusPoints;
 		this.prevSegment = prevSegment;
 		this.nextSegment = nextSegment;
 	}
@@ -98,14 +107,15 @@ class Bodypart {
 
 		const vector = Point.subtract(prev.origin, next.origin);
 
-		return Point.multiply(Point.normalize(vector), bodypart.skinRadius / 2);
+		return Point.multiply(Point.normalize(vector), bodypart.skinRadius);
 	}
 }
 
 class RadiusDiscriptor {
-	constructor(segmentDistance, skinRadius) {
+	constructor(segmentDistance, skinRadius, plusPoints) {
 		this.segmentDistance = segmentDistance;
 		this.skinRadius = skinRadius;
+		this.plusPoints = plusPoints;
 	}
 }
 
@@ -114,6 +124,7 @@ function setupAnimal(startingPoint, radiusDiscriptorArray) {
 		startingPoint,
 		radiusDiscriptorArray[0].segmentDistance,
 		radiusDiscriptorArray[0].skinRadius,
+		radiusDiscriptorArray[0].plusPoints,
 		undefined,
 		undefined
 	);
@@ -125,11 +136,12 @@ function setupAnimal(startingPoint, radiusDiscriptorArray) {
 			new Point(current.origin.x - radiusDiscriptorArray[index].segmentDistance, current.origin.y),
 			radiusDiscriptorArray[index].segmentDistance,
 			radiusDiscriptorArray[index].skinRadius,
+			radiusDiscriptorArray[index].plusPoints,
+			current,
 			undefined
 		);
 
 		current.nextSegment = next;
-		next.prevSegment = current;
 		current = next;
 	}
 
@@ -140,21 +152,49 @@ function drawAnimal(animal) {
 	//console.log("Head");
 	for (const bodypart of animal) {
 		//console.log(bodypart.origin);
-		ellipse(bodypart.origin.x, bodypart.origin.y, bodypart.skinRadius);
+		ellipse(bodypart.origin.x, bodypart.origin.y, bodypart.skinRadius * 2);
 	}
 }
 
 function getPointsOfAnimal(animal) {
 	const left = [];
 	const right = [];
+	let end;
 
 	for (const bodypart of animal) {
 		let front = Bodypart.getFrontVector(bodypart);
+
+		if (bodypart.plusPoints instanceof Array) {
+			for (const angle of bodypart.plusPoints) {
+				if (Math.abs(angle) < 90) {
+					const angleInRadian = radians(angle);
+
+					left.push(Point.add(bodypart.origin, Point.rotateRadian(front, angleInRadian)));
+					right.push(Point.add(bodypart.origin, Point.rotateRadian(front, -angleInRadian)));
+				}
+			}
+		}
+
 		left.push(Point.add(bodypart.origin, Point.normalLeft(front)));
 		right.push(Point.add(bodypart.origin, Point.normalRight(front)));
+
+		if (bodypart.plusPoints instanceof Array) {
+			for (const angle of bodypart.plusPoints) {
+				if (Math.abs(angle) > 90) {
+					const angleInRadian = radians(angle);
+
+					left.push(Point.add(bodypart.origin, Point.rotateRadian(front, angleInRadian)));
+					right.push(Point.add(bodypart.origin, Point.rotateRadian(front, -angleInRadian)));
+				}
+			}
+		}
+
+		end = bodypart;
 	}
 
-	return right.reverse().concat([Point.add(animal.origin, Bodypart.getFrontVector(animal))]).concat(left);
+	const frontPoint = Point.add(animal.origin, Bodypart.getFrontVector(animal));
+	const backPoint = Point.subtract(end.origin, Bodypart.getFrontVector(end));
+	return [backPoint].concat(right.reverse()).concat([frontPoint]).concat(left);
 }
 
 function drawLoop(points) {
@@ -174,7 +214,7 @@ function animationLoop(animal, speedInPixels) {
 	background(100, 100, 100);
 
 	stroke(255);
-	fill(255, 0, 0, 155);
+	fill(255, 0, 0, 255);
 
 	animal.step(speedInPixels);
 
@@ -186,82 +226,82 @@ function animationLoop(animal, speedInPixels) {
 
 function setup() {
 	const lizard = [
-		new RadiusDiscriptor(undefined, 52),
-		new RadiusDiscriptor(26, 58),
-		new RadiusDiscriptor(29, 40),
-		new RadiusDiscriptor(22, 60),
-		new RadiusDiscriptor(33, 68),
-		new RadiusDiscriptor(27, 71),
-		new RadiusDiscriptor(32, 64),
-		new RadiusDiscriptor(25, 50),
-		new RadiusDiscriptor(30, 28),
-		new RadiusDiscriptor(25, 15),
-		new RadiusDiscriptor(25, 11),
-		new RadiusDiscriptor(25, 9),
-		new RadiusDiscriptor(25, 7),
-		new RadiusDiscriptor(25, 7),
+		new RadiusDiscriptor(undefined, 26, [45]),
+		new RadiusDiscriptor(26, 29),
+		new RadiusDiscriptor(29, 20),
+		new RadiusDiscriptor(22, 30),
+		new RadiusDiscriptor(33, 34),
+		new RadiusDiscriptor(27, 36),
+		new RadiusDiscriptor(32, 32),
+		new RadiusDiscriptor(25, 25),
+		new RadiusDiscriptor(30, 14),
+		new RadiusDiscriptor(25, 8),
+		new RadiusDiscriptor(25, 6),
+		new RadiusDiscriptor(25, 5),
+		new RadiusDiscriptor(25, 4),
+		new RadiusDiscriptor(25, 4),
 	];
 	const snake = [
-		new RadiusDiscriptor(undefined, 52),
-		new RadiusDiscriptor(26, 58),
-		new RadiusDiscriptor(29, 44),
-		new RadiusDiscriptor(22, 43),
-		new RadiusDiscriptor(22, 43),
-		new RadiusDiscriptor(22, 42),
-		new RadiusDiscriptor(22, 42),
-		new RadiusDiscriptor(22, 41),
-		new RadiusDiscriptor(22, 41),
-		new RadiusDiscriptor(22, 39),
-		new RadiusDiscriptor(22, 39),
-		new RadiusDiscriptor(22, 38),
-		new RadiusDiscriptor(22, 38),
-		new RadiusDiscriptor(22, 37),
-		new RadiusDiscriptor(22, 37),
-		new RadiusDiscriptor(22, 36),
-		new RadiusDiscriptor(22, 36),
-		new RadiusDiscriptor(22, 35),
-		new RadiusDiscriptor(22, 35),
-		new RadiusDiscriptor(22, 34),
-		new RadiusDiscriptor(22, 34),
-		new RadiusDiscriptor(22, 33),
-		new RadiusDiscriptor(22, 33),
-		new RadiusDiscriptor(22, 32),
-		new RadiusDiscriptor(22, 32),
-		new RadiusDiscriptor(22, 31),
-		new RadiusDiscriptor(22, 31),
-		new RadiusDiscriptor(22, 30),
-		new RadiusDiscriptor(22, 30),
-		new RadiusDiscriptor(22, 29),
-		new RadiusDiscriptor(22, 29),
-		new RadiusDiscriptor(22, 28),
-		new RadiusDiscriptor(22, 28),
-		new RadiusDiscriptor(22, 27),
-		new RadiusDiscriptor(22, 27),
-		new RadiusDiscriptor(22, 26),
-		new RadiusDiscriptor(22, 26),
-		new RadiusDiscriptor(22, 25),
-		new RadiusDiscriptor(22, 25),
-		new RadiusDiscriptor(22, 24),
-		new RadiusDiscriptor(22, 24),
-		new RadiusDiscriptor(22, 23),
-		new RadiusDiscriptor(22, 23),
+		new RadiusDiscriptor(undefined, 26, [45]),
+		new RadiusDiscriptor(26, 29),
+		new RadiusDiscriptor(29, 23),
+		new RadiusDiscriptor(22, 22),
+		new RadiusDiscriptor(22, 22),
 		new RadiusDiscriptor(22, 22),
 		new RadiusDiscriptor(22, 22),
 		new RadiusDiscriptor(22, 21),
 		new RadiusDiscriptor(22, 21),
+		new RadiusDiscriptor(22, 21),
+		new RadiusDiscriptor(22, 21),
+		new RadiusDiscriptor(22, 20),
+		new RadiusDiscriptor(22, 20),
 		new RadiusDiscriptor(22, 20),
 		new RadiusDiscriptor(22, 20),
 		new RadiusDiscriptor(22, 19),
+		new RadiusDiscriptor(22, 19),
+		new RadiusDiscriptor(22, 19),
+		new RadiusDiscriptor(22, 19),
+		new RadiusDiscriptor(22, 18),
+		new RadiusDiscriptor(22, 18),
+		new RadiusDiscriptor(22, 18),
 		new RadiusDiscriptor(22, 18),
 		new RadiusDiscriptor(22, 17),
+		new RadiusDiscriptor(22, 17),
+		new RadiusDiscriptor(22, 17),
+		new RadiusDiscriptor(22, 17),
+		new RadiusDiscriptor(22, 16),
+		new RadiusDiscriptor(22, 16),
+		new RadiusDiscriptor(22, 16),
 		new RadiusDiscriptor(22, 16),
 		new RadiusDiscriptor(22, 15),
+		new RadiusDiscriptor(22, 15),
+		new RadiusDiscriptor(22, 15),
+		new RadiusDiscriptor(22, 15),
+		new RadiusDiscriptor(22, 14),
+		new RadiusDiscriptor(22, 14),
 		new RadiusDiscriptor(22, 14),
 		new RadiusDiscriptor(22, 13),
+		new RadiusDiscriptor(22, 13),
+		new RadiusDiscriptor(22, 13),
+		new RadiusDiscriptor(22, 12),
+		new RadiusDiscriptor(22, 12),
 		new RadiusDiscriptor(22, 12),
 		new RadiusDiscriptor(22, 11),
+		new RadiusDiscriptor(22, 11),
+		new RadiusDiscriptor(22, 11),
 		new RadiusDiscriptor(22, 10),
+		new RadiusDiscriptor(22, 10),
+		new RadiusDiscriptor(22, 10),
+		new RadiusDiscriptor(22, 9),
+		new RadiusDiscriptor(22, 9),
+		new RadiusDiscriptor(22, 9),
+		new RadiusDiscriptor(22, 8),
+		new RadiusDiscriptor(22, 8),
 		new RadiusDiscriptor(22, 7),
+		new RadiusDiscriptor(22, 7),
+		new RadiusDiscriptor(22, 6),
+		new RadiusDiscriptor(22, 5),
+		new RadiusDiscriptor(22, 4),
 	];
 	const test = [
 		new RadiusDiscriptor(undefined, 52),
@@ -270,7 +310,6 @@ function setup() {
 
 	const FPS = 60;
 	const speedInPixels = 10;
-
 	const animal = setupAnimal(new Point(1200, 300), snake);
 
 	createCanvas(1400, 700);
