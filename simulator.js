@@ -1,3 +1,11 @@
+class Color {
+	constructor(r, g, b) {
+		this.r = r;
+		this.g = g;
+		this.b = b;
+	}
+}
+
 class Point {
 	constructor(x, y) {
 		this.x = x;
@@ -54,13 +62,49 @@ class Point {
 }
 
 class Bodypart {
-	constructor(origin, segmentDistance, skinRadius, plusPoints, prevSegment, nextSegment) {
+	constructor(segment) {
+		this.segment = segment;
+	}
+
+	draw() { }
+}
+
+class Eye extends Bodypart {
+	constructor(segment, degreeToFront, distanceToOrigin, radius, color) {
+		super(segment);
+		this.radianToFront = radians(degreeToFront);
+		this.distanceToOrigin = distanceToOrigin;
+		this.radius = radius;
+		this.color = color;
+	}
+
+	draw() {
+		fill(this.color.r, this.color.g, this.color.b);
+
+		const frontScaled = Point.multiply(Point.normalize(Segment.getFrontVector(this.segment)), this.distanceToOrigin);
+
+		let eyePoint = Point.add(this.segment.origin, Point.rotateRadian(frontScaled, this.radianToFront));
+		ellipse(eyePoint.x, eyePoint.y, this.radius, this.radius);
+
+		eyePoint = Point.add(this.segment.origin, Point.rotateRadian(frontScaled, -this.radianToFront));
+		ellipse(eyePoint.x, eyePoint.y, this.radius, this.radius);
+	}
+}
+
+class Leg extends Bodypart {
+	constructor(segment) {
+		super(segment);
+	}
+}
+
+class Segment {
+	constructor(prevSegment, nextSegment, origin, segmentDistance, skinRadius, bodypart) {
+		this.prevSegment = prevSegment;
+		this.nextSegment = nextSegment;
 		this.origin = origin;
 		this.segmentDistance = segmentDistance;
 		this.skinRadius = skinRadius;
-		this.plusPoints = plusPoints;
-		this.prevSegment = prevSegment;
-		this.nextSegment = nextSegment;
+		this.bodypart = bodypart;
 	}
 
 	*[Symbol.iterator]() {
@@ -71,75 +115,91 @@ class Bodypart {
 		}
 	}
 
-	step(speedInPixels) {
-		const vectorToMouse = Point.subtract(Point.mouse(), this.origin);
+	static step(segment, speedInPixels) {
+		const vectorToMouse = Point.subtract(Point.mouse(), segment.origin);
 
 		if (Point.magnitude(vectorToMouse) < speedInPixels)
 			return;
 
 		const direction = Point.multiply(Point.normalize(vectorToMouse), speedInPixels);
 
-		this.origin = Point.add(this.origin, direction);
-		Bodypart.pullNext(this);
+		segment.origin = Point.add(segment.origin, direction);
+		Segment.pullNext(segment);
 	}
 
-	static pullNext(bodypart) {
-		if (bodypart.nextSegment instanceof Bodypart) {
-			const vector = Point.subtract(bodypart.nextSegment.origin, bodypart.origin);
+	static pullNext(segment) {
+		if (segment.nextSegment instanceof Segment) {
+			const vector = Point.subtract(segment.nextSegment.origin, segment.origin);
 
-			bodypart.nextSegment.origin = Point.add(bodypart.origin, Point.multiply(Point.normalize(vector), bodypart.nextSegment.segmentDistance));
+			segment.nextSegment.origin = Point.add(segment.origin, Point.multiply(Point.normalize(vector), segment.nextSegment.segmentDistance));
 
-			Bodypart.pullNext(bodypart.nextSegment);
+			Segment.pullNext(segment.nextSegment);
 		}
 	}
 
-	static getFrontVector(bodypart) {
-		let prev = bodypart.prevSegment;
-		let next = bodypart.nextSegment;
+	static getFrontVector(segment) {
+		let prev = segment.prevSegment;
+		let next = segment.nextSegment;
 
-		if (!(prev instanceof Bodypart || next instanceof Bodypart))
-			throw "Not enough bodyparts!";
+		if (!(prev instanceof Segment || next instanceof Segment))
+			throw "Not enough segments!";
 
-		if (!(prev instanceof Bodypart))
-			prev = bodypart;
-		if (!(next instanceof Bodypart))
-			next = bodypart;
+		if (!(prev instanceof Segment))
+			prev = segment;
+		if (!(next instanceof Segment))
+			next = segment;
 
 		const vector = Point.subtract(prev.origin, next.origin);
 
-		return Point.multiply(Point.normalize(vector), bodypart.skinRadius);
+		return Point.multiply(Point.normalize(vector), segment.skinRadius);
 	}
 }
 
-class RadiusDiscriptor {
-	constructor(segmentDistance, skinRadius, plusPoints) {
-		this.segmentDistance = segmentDistance;
+class SegmentDiscriptor {
+	constructor(nextSegmentDistance, skinRadius, bodypart = undefined) {
+		this.nextSegmentDistance = nextSegmentDistance;
 		this.skinRadius = skinRadius;
-		this.plusPoints = plusPoints;
+		this.bodypart = bodypart;
 	}
 }
 
-function setupAnimal(startingPoint, radiusDiscriptorArray) {
-	const result = new Bodypart(
-		startingPoint,
-		radiusDiscriptorArray[0].segmentDistance,
-		radiusDiscriptorArray[0].skinRadius,
-		radiusDiscriptorArray[0].plusPoints,
+class Animal {
+	constructor(headPosition, radiusDiscriptors, bodyColor) {
+		this.headSegment = setupAnimal(headPosition, radiusDiscriptors);
+		this.bodyColor = bodyColor;
+	}
+
+	step(speedInPixels) {
+		Segment.step(this.headSegment, speedInPixels);
+	}
+}
+
+function setupAnimal(startingPoint, segmentDiscriptors) {
+	const result = new Segment(
 		undefined,
-		undefined
+		undefined,
+		startingPoint,
+		segmentDiscriptors[0].nextSegmentDistance,
+		segmentDiscriptors[0].skinRadius,
+		segmentDiscriptors[0].bodypart
 	);
+	if (result.bodypart instanceof Bodypart)
+		result.bodypart.segment = result;
+
 	let current = result;
 	let next;
 
-	for (let index = 1; index < radiusDiscriptorArray.length; ++index) {
-		next = new Bodypart(
-			new Point(current.origin.x - radiusDiscriptorArray[index].segmentDistance, current.origin.y),
-			radiusDiscriptorArray[index].segmentDistance,
-			radiusDiscriptorArray[index].skinRadius,
-			radiusDiscriptorArray[index].plusPoints,
+	for (let index = 1; index < segmentDiscriptors.length; ++index) {
+		next = new Segment(
 			current,
-			undefined
+			undefined,
+			new Point(current.origin.x - segmentDiscriptors[index].nextSegmentDistance, current.origin.y),
+			segmentDiscriptors[index].nextSegmentDistance,
+			segmentDiscriptors[index].skinRadius,
+			segmentDiscriptors[index].bodypart
 		);
+		if (next.bodypart instanceof Bodypart)
+			next.bodypart.segment = next;
 
 		current.nextSegment = next;
 		current = next;
@@ -148,59 +208,54 @@ function setupAnimal(startingPoint, radiusDiscriptorArray) {
 	return result
 }
 
-function drawAnimal(animal) {
-	//console.log("Head");
-	for (const bodypart of animal) {
-		//console.log(bodypart.origin);
-		ellipse(bodypart.origin.x, bodypart.origin.y, bodypart.skinRadius * 2);
+function drawAnimalByCircles(headSegment) {
+	// console.log("Head");
+	for (const segment of headSegment) {
+		// console.log(segment.origin);
+		ellipse(segment.origin.x, segment.origin.y, segment.skinRadius * 2);
 	}
 }
 
-function getPointsOfAnimal(animal) {
-	const left = [];
-	const right = [];
+function getPointsOfAnimal(headSegment) {
+	const angleInRadian = radians(45);
+
+	const front = Segment.getFrontVector(headSegment);
+
+	const left = [Point.add(headSegment.origin, front), Point.add(headSegment.origin, Point.rotateRadian(front, angleInRadian))];
+	const right = [Point.add(headSegment.origin, Point.rotateRadian(front, -angleInRadian))];
+
 	let end;
 
-	for (const bodypart of animal) {
-		let front = Bodypart.getFrontVector(bodypart);
+	for (const segment of headSegment) {
+		let front = Segment.getFrontVector(segment);
 
-		if (bodypart.plusPoints instanceof Array) {
-			for (const angle of bodypart.plusPoints) {
-				if (Math.abs(angle) < 90) {
-					const angleInRadian = radians(angle);
+		left.push(Point.add(segment.origin, Point.normalLeft(front)));
+		right.push(Point.add(segment.origin, Point.normalRight(front)));
 
-					left.push(Point.add(bodypart.origin, Point.rotateRadian(front, angleInRadian)));
-					right.push(Point.add(bodypart.origin, Point.rotateRadian(front, -angleInRadian)));
-				}
-			}
-		}
-
-		left.push(Point.add(bodypart.origin, Point.normalLeft(front)));
-		right.push(Point.add(bodypart.origin, Point.normalRight(front)));
-
-		if (bodypart.plusPoints instanceof Array) {
-			for (const angle of bodypart.plusPoints) {
-				if (Math.abs(angle) > 90) {
-					const angleInRadian = radians(angle);
-
-					left.push(Point.add(bodypart.origin, Point.rotateRadian(front, angleInRadian)));
-					right.push(Point.add(bodypart.origin, Point.rotateRadian(front, -angleInRadian)));
-				}
-			}
-		}
-
-		end = bodypart;
+		end = segment;
 	}
 
-	const frontPoint = Point.add(animal.origin, Bodypart.getFrontVector(animal));
-	const backPoint = Point.subtract(end.origin, Bodypart.getFrontVector(end));
-	return [backPoint].concat(right.reverse()).concat([frontPoint]).concat(left);
+	let back = Segment.getFrontVector(end);
+	back = new Point(-back.x, -back.y);
+
+	/* 
+	left.push(Point.add(end.origin, Point.rotateRadian(back, -angleInRadian)));
+	right.push(Point.add(end.origin, Point.rotateRadian(back, angleInRadian)));
+	*/
+
+	left.push(Point.add(end.origin, back));
+
+	return left.reverse().concat(right);
+}
+
+
+function drawAnimalByPoints(animal) {
+	fill(animal.bodyColor.r, animal.bodyColor.g, animal.bodyColor.b);
+
+	drawLoop(getPointsOfAnimal(animal.headSegment));
 }
 
 function drawLoop(points) {
-	if (points.length < 1)
-		return;
-
 	beginShape();
 	curveVertex(points[0].x, points[0].y);
 	for (const point of points)
@@ -211,109 +266,111 @@ function drawLoop(points) {
 }
 
 function animationLoop(animal, speedInPixels) {
-	background(100, 100, 100);
-
-	stroke(255);
-	fill(255, 0, 0, 255);
+	background(20, 80, 20);
 
 	animal.step(speedInPixels);
 
-	const points = getPointsOfAnimal(animal);
-	drawLoop(points);
+	drawAnimalByPoints(animal);
+	// drawAnimalByCircles(animal);
 
-	//drawAnimal(animal);
+	for (const segment of animal.headSegment) {
+		if (segment.bodypart instanceof Bodypart)
+			segment.bodypart.draw();
+	}
 }
 
 function setup() {
+	strokeCap(ROUND);
+	strokeJoin(ROUND);
+	stroke(0);
+	createCanvas(1600, 800);
+
 	const lizard = [
-		new RadiusDiscriptor(undefined, 26, [45]),
-		new RadiusDiscriptor(26, 29),
-		new RadiusDiscriptor(29, 20),
-		new RadiusDiscriptor(22, 30),
-		new RadiusDiscriptor(33, 34),
-		new RadiusDiscriptor(27, 36),
-		new RadiusDiscriptor(32, 32),
-		new RadiusDiscriptor(25, 25),
-		new RadiusDiscriptor(30, 14),
-		new RadiusDiscriptor(25, 8),
-		new RadiusDiscriptor(25, 6),
-		new RadiusDiscriptor(25, 5),
-		new RadiusDiscriptor(25, 4),
-		new RadiusDiscriptor(25, 4),
+		new SegmentDiscriptor(undefined, 26, new Eye(undefined, 115, 22, 10, new Color(0, 0, 0))),
+		new SegmentDiscriptor(26, 29),
+		new SegmentDiscriptor(29, 20),
+		new SegmentDiscriptor(22, 30),
+		new SegmentDiscriptor(33, 34),
+		new SegmentDiscriptor(27, 36),
+		new SegmentDiscriptor(32, 32),
+		new SegmentDiscriptor(25, 25),
+		new SegmentDiscriptor(30, 14),
+		new SegmentDiscriptor(25, 8),
+		new SegmentDiscriptor(25, 6),
+		new SegmentDiscriptor(25, 5),
+		new SegmentDiscriptor(25, 4),
+		new SegmentDiscriptor(25, 4),
 	];
 	const snake = [
-		new RadiusDiscriptor(undefined, 26, [45]),
-		new RadiusDiscriptor(26, 29),
-		new RadiusDiscriptor(29, 23),
-		new RadiusDiscriptor(22, 22),
-		new RadiusDiscriptor(22, 22),
-		new RadiusDiscriptor(22, 22),
-		new RadiusDiscriptor(22, 22),
-		new RadiusDiscriptor(22, 21),
-		new RadiusDiscriptor(22, 21),
-		new RadiusDiscriptor(22, 21),
-		new RadiusDiscriptor(22, 21),
-		new RadiusDiscriptor(22, 20),
-		new RadiusDiscriptor(22, 20),
-		new RadiusDiscriptor(22, 20),
-		new RadiusDiscriptor(22, 20),
-		new RadiusDiscriptor(22, 19),
-		new RadiusDiscriptor(22, 19),
-		new RadiusDiscriptor(22, 19),
-		new RadiusDiscriptor(22, 19),
-		new RadiusDiscriptor(22, 18),
-		new RadiusDiscriptor(22, 18),
-		new RadiusDiscriptor(22, 18),
-		new RadiusDiscriptor(22, 18),
-		new RadiusDiscriptor(22, 17),
-		new RadiusDiscriptor(22, 17),
-		new RadiusDiscriptor(22, 17),
-		new RadiusDiscriptor(22, 17),
-		new RadiusDiscriptor(22, 16),
-		new RadiusDiscriptor(22, 16),
-		new RadiusDiscriptor(22, 16),
-		new RadiusDiscriptor(22, 16),
-		new RadiusDiscriptor(22, 15),
-		new RadiusDiscriptor(22, 15),
-		new RadiusDiscriptor(22, 15),
-		new RadiusDiscriptor(22, 15),
-		new RadiusDiscriptor(22, 14),
-		new RadiusDiscriptor(22, 14),
-		new RadiusDiscriptor(22, 14),
-		new RadiusDiscriptor(22, 13),
-		new RadiusDiscriptor(22, 13),
-		new RadiusDiscriptor(22, 13),
-		new RadiusDiscriptor(22, 12),
-		new RadiusDiscriptor(22, 12),
-		new RadiusDiscriptor(22, 12),
-		new RadiusDiscriptor(22, 11),
-		new RadiusDiscriptor(22, 11),
-		new RadiusDiscriptor(22, 11),
-		new RadiusDiscriptor(22, 10),
-		new RadiusDiscriptor(22, 10),
-		new RadiusDiscriptor(22, 10),
-		new RadiusDiscriptor(22, 9),
-		new RadiusDiscriptor(22, 9),
-		new RadiusDiscriptor(22, 9),
-		new RadiusDiscriptor(22, 8),
-		new RadiusDiscriptor(22, 8),
-		new RadiusDiscriptor(22, 7),
-		new RadiusDiscriptor(22, 7),
-		new RadiusDiscriptor(22, 6),
-		new RadiusDiscriptor(22, 5),
-		new RadiusDiscriptor(22, 4),
+		new SegmentDiscriptor(undefined, 26, new Eye(undefined, 115, 22, 10, new Color(0, 0, 0))),
+		new SegmentDiscriptor(26, 29),
+		new SegmentDiscriptor(29, 23),
+		new SegmentDiscriptor(22, 22),
+		new SegmentDiscriptor(22, 22),
+		new SegmentDiscriptor(22, 22),
+		new SegmentDiscriptor(22, 22),
+		new SegmentDiscriptor(22, 21),
+		new SegmentDiscriptor(22, 21),
+		new SegmentDiscriptor(22, 21),
+		new SegmentDiscriptor(22, 21),
+		new SegmentDiscriptor(22, 20),
+		new SegmentDiscriptor(22, 20),
+		new SegmentDiscriptor(22, 20),
+		new SegmentDiscriptor(22, 20),
+		new SegmentDiscriptor(22, 19),
+		new SegmentDiscriptor(22, 19),
+		new SegmentDiscriptor(22, 19),
+		new SegmentDiscriptor(22, 19),
+		new SegmentDiscriptor(22, 18),
+		new SegmentDiscriptor(22, 18),
+		new SegmentDiscriptor(22, 18),
+		new SegmentDiscriptor(22, 18),
+		new SegmentDiscriptor(22, 17),
+		new SegmentDiscriptor(22, 17),
+		new SegmentDiscriptor(22, 17),
+		new SegmentDiscriptor(22, 17),
+		new SegmentDiscriptor(22, 16),
+		new SegmentDiscriptor(22, 16),
+		new SegmentDiscriptor(22, 16),
+		new SegmentDiscriptor(22, 16),
+		new SegmentDiscriptor(22, 15),
+		new SegmentDiscriptor(22, 15),
+		new SegmentDiscriptor(22, 15),
+		new SegmentDiscriptor(22, 15),
+		new SegmentDiscriptor(22, 14),
+		new SegmentDiscriptor(22, 14),
+		new SegmentDiscriptor(22, 14),
+		new SegmentDiscriptor(22, 13),
+		new SegmentDiscriptor(22, 13),
+		new SegmentDiscriptor(22, 13),
+		new SegmentDiscriptor(22, 12),
+		new SegmentDiscriptor(22, 12),
+		new SegmentDiscriptor(22, 12),
+		new SegmentDiscriptor(22, 11),
+		new SegmentDiscriptor(22, 11),
+		new SegmentDiscriptor(22, 11),
+		new SegmentDiscriptor(22, 10),
+		new SegmentDiscriptor(22, 10),
+		new SegmentDiscriptor(22, 10),
+		new SegmentDiscriptor(22, 9),
+		new SegmentDiscriptor(22, 9),
+		new SegmentDiscriptor(22, 9),
+		new SegmentDiscriptor(22, 8),
+		new SegmentDiscriptor(22, 8),
+		new SegmentDiscriptor(22, 7),
+		new SegmentDiscriptor(22, 7),
+		new SegmentDiscriptor(22, 6),
+		new SegmentDiscriptor(22, 5),
+		new SegmentDiscriptor(22, 4),
 	];
 	const test = [
-		new RadiusDiscriptor(undefined, 52),
-		new RadiusDiscriptor(26, 58)
+		new SegmentDiscriptor(undefined, 52),
+		new SegmentDiscriptor(26, 58)
 	];
 
 	const FPS = 60;
 	const speedInPixels = 10;
-	const animal = setupAnimal(new Point(1200, 300), snake);
+	const animal = new Animal(new Point(1200, 300), snake, new Color(10, 190, 10));
 
-	createCanvas(1400, 700);
-
-	drawAnimal(animal);
 	setInterval(() => { animationLoop(animal, speedInPixels); }, Math.floor(1000 / FPS));
 }
