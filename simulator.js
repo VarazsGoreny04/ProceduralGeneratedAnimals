@@ -62,8 +62,12 @@ class Point {
 }
 
 class Bodypart {
-	constructor(segment) {
+	static TOP = true;
+	static BOTTOM = false;
+
+	constructor(segment, render) {
 		this.segment = segment;
+		this.render = render;
 	}
 
 	draw() { }
@@ -71,7 +75,7 @@ class Bodypart {
 
 class Eye extends Bodypart {
 	constructor(segment, degreeToFront, distanceToOrigin, radius, color) {
-		super(segment);
+		super(segment, Bodypart.BOTTOM);
 		this.radianToFront = radians(degreeToFront);
 		this.distanceToOrigin = distanceToOrigin;
 		this.radius = radius;
@@ -91,9 +95,60 @@ class Eye extends Bodypart {
 	}
 }
 
+class Fin extends Bodypart {
+	constructor(segment, lengthInSegments, color) {
+		super(segment, Bodypart.TOP);
+		this.lengthInSegments = lengthInSegments;
+		this.color = color;
+	}
+
+	static getFinPoints(fin) {
+		const points = [];
+
+		let counter = 0;
+		for (const nextSegment of fin.segment) {
+			if (counter > fin.lengthInSegments)
+				return points;
+
+			points.push(nextSegment.origin);
+
+			++counter;
+		}
+
+		return points;
+	}
+
+	draw() {
+		// fill(this.color.r, this.color.g, this.color.b);
+		fill(0, 0, 0, 0);
+
+		drawLine(Fin.getFinPoints(this));
+	}
+}
+
+class Antenna extends Bodypart {
+	constructor(segment, degreeToFront, distanceToOrigin, radius, color) {
+		super(segment, Bodypart.BOTTOM);
+		this.radianToFront = radians(degreeToFront);
+		this.distanceToOrigin = distanceToOrigin;
+		this.radius = radius;
+		this.color = color;
+	}
+
+	draw() {
+		/* fill(this.color.r, this.color.g, this.color.b);
+
+		const frontScaled = Point.multiply(Point.normalize(Segment.getFrontVector(this.segment)), this.distanceToOrigin);
+
+		let eyePoint = Point.add(this.segment.origin, Point.rotateRadian(frontScaled, this.radianToFront));
+
+		eyePoint = Point.add(this.segment.origin, Point.rotateRadian(frontScaled, -this.radianToFront)); */
+	}
+}
+
 class Leg extends Bodypart {
 	constructor(segment) {
-		super(segment);
+		super(segment, Bodypart.BOTTOM);
 	}
 }
 
@@ -255,6 +310,15 @@ function drawAnimalByPoints(animal) {
 	drawLoop(getPointsOfAnimal(animal.headSegment));
 }
 
+function drawLine(points) {
+	beginShape();
+	curveVertex(points[0].x, points[0].y);
+	for (const point of points)
+		curveVertex(point.x, point.y);
+	curveVertex(points[points.length - 1].x, points[points.length - 1].y);
+	endShape();
+}
+
 function drawLoop(points) {
 	beginShape();
 	curveVertex(points[0].x, points[0].y);
@@ -270,11 +334,16 @@ function animationLoop(animal, speedInPixels) {
 
 	animal.step(speedInPixels);
 
+	for (const segment of animal.headSegment) {
+		if (segment.bodypart instanceof Bodypart && !segment.bodypart.render)
+			segment.bodypart.draw();
+	}
+
 	drawAnimalByPoints(animal);
-	// drawAnimalByCircles(animal);
+	//drawAnimalByCircles(animal.headSegment);
 
 	for (const segment of animal.headSegment) {
-		if (segment.bodypart instanceof Bodypart)
+		if (segment.bodypart instanceof Bodypart && segment.bodypart.render)
 			segment.bodypart.draw();
 	}
 }
@@ -285,22 +354,6 @@ function setup() {
 	stroke(0);
 	createCanvas(1600, 800);
 
-	const lizard = [
-		new SegmentDiscriptor(undefined, 26, new Eye(undefined, 115, 22, 10, new Color(0, 0, 0))),
-		new SegmentDiscriptor(26, 29),
-		new SegmentDiscriptor(29, 20),
-		new SegmentDiscriptor(22, 30),
-		new SegmentDiscriptor(33, 34),
-		new SegmentDiscriptor(27, 36),
-		new SegmentDiscriptor(32, 32),
-		new SegmentDiscriptor(25, 25),
-		new SegmentDiscriptor(30, 14),
-		new SegmentDiscriptor(25, 8),
-		new SegmentDiscriptor(25, 6),
-		new SegmentDiscriptor(25, 5),
-		new SegmentDiscriptor(25, 4),
-		new SegmentDiscriptor(25, 4),
-	];
 	const snake = [
 		new SegmentDiscriptor(undefined, 26, new Eye(undefined, 115, 22, 10, new Color(0, 0, 0))),
 		new SegmentDiscriptor(26, 29),
@@ -363,14 +416,37 @@ function setup() {
 		new SegmentDiscriptor(22, 5),
 		new SegmentDiscriptor(22, 4),
 	];
-	const test = [
-		new SegmentDiscriptor(undefined, 52),
-		new SegmentDiscriptor(26, 58)
+	const lizard = [
+		new SegmentDiscriptor(undefined, 26, new Eye(undefined, 115, 22, 10, new Color(0, 0, 0))),
+		new SegmentDiscriptor(26, 29),
+		new SegmentDiscriptor(29, 20),
+		new SegmentDiscriptor(22, 30),
+		new SegmentDiscriptor(33, 34),
+		new SegmentDiscriptor(27, 36),
+		new SegmentDiscriptor(32, 32),
+		new SegmentDiscriptor(25, 25),
+		new SegmentDiscriptor(30, 14),
+		new SegmentDiscriptor(25, 8),
+		new SegmentDiscriptor(25, 6),
+		new SegmentDiscriptor(25, 5),
+		new SegmentDiscriptor(25, 4),
+		new SegmentDiscriptor(25, 4),
+	];
+	const fish = [
+		new SegmentDiscriptor(18, 18, new Eye(undefined, 100, 16, 20, new Color(0, 0, 100))),
+		new SegmentDiscriptor(22, 30),
+		new SegmentDiscriptor(33, 34, new Fin(undefined, 2, new Color(255, 0, 0))),
+		new SegmentDiscriptor(27, 36),
+		new SegmentDiscriptor(32, 32),
+		new SegmentDiscriptor(25, 25),
+		new SegmentDiscriptor(30, 14),
+		new SegmentDiscriptor(25, 8),
+		new SegmentDiscriptor(25, 6),
 	];
 
 	const FPS = 60;
 	const speedInPixels = 10;
-	const animal = new Animal(new Point(1200, 300), snake, new Color(10, 190, 10));
+	const animal = new Animal(new Point(1200, 300), fish, new Color(20, 130, 255));
 
 	setInterval(() => { animationLoop(animal, speedInPixels); }, Math.floor(1000 / FPS));
 }
