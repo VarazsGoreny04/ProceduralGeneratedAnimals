@@ -59,6 +59,33 @@ class Point {
 	static mouse() {
 		return new Point(mouseX, mouseY);
 	}
+
+	static dot(v1, v2) {
+		return v1.x * v2.x + v1.y * v2.y;
+	}
+
+	static cosOfVectors(v1, v2) {
+		return Point.dot(v1, v2) / (Point.magnitude(v1) * Point.magnitude(v2));
+	}
+
+	static sinOfVectors(v1, v2) {
+		v1 = Point.normalLeft(v1);
+		return Point.dot(v1, v2) / (Point.magnitude(v1) * Point.magnitude(v2));
+	}
+
+	static cosOfPoints(a, b, c) {
+		const v1 = Point.subtract(a, b);
+		const v2 = Point.subtract(c, b);
+
+		return Point.cosOfVectors(v1, v2);
+	}
+
+	static sinOfPoints(a, b, c) {
+		const v1 = Point.subtract(a, b);
+		const v2 = Point.subtract(c, b);
+
+		return Point.sinOfVectors(v1, v2);
+	}
 }
 
 class Bodypart {
@@ -108,21 +135,26 @@ class Fin extends Bodypart {
 		let counter = 0;
 		for (const nextSegment of fin.segment) {
 			if (counter > fin.lengthInSegments)
-				return points;
+				break;
 
 			points.push(nextSegment.origin);
-
 			++counter;
+		}
+
+		const angle = Point.sinOfPoints(points[points.length - 3], points[points.length - 2], points[points.length - 1]);
+
+		for (let index = points.length - 1; index > 0; --index) {
+			const topPoint = Point.normalRight(Point.subtract(points[index - 1], points[index]));
+			points.push(Point.add(points[index], Point.multiply(topPoint, angle)));
 		}
 
 		return points;
 	}
 
 	draw() {
-		// fill(this.color.r, this.color.g, this.color.b);
-		fill(0, 0, 0, 0);
+		fill(this.color.r, this.color.g, this.color.b);
 
-		drawLine(Fin.getFinPoints(this));
+		drawLoop(Fin.getFinPoints(this));
 	}
 }
 
@@ -435,7 +467,7 @@ function setup() {
 	const fish = [
 		new SegmentDiscriptor(18, 18, new Eye(undefined, 100, 16, 20, new Color(0, 0, 100))),
 		new SegmentDiscriptor(22, 30),
-		new SegmentDiscriptor(33, 34, new Fin(undefined, 2, new Color(255, 0, 0))),
+		new SegmentDiscriptor(33, 34, new Fin(undefined, 2, new Color(0, 0, 190))),
 		new SegmentDiscriptor(27, 36),
 		new SegmentDiscriptor(32, 32),
 		new SegmentDiscriptor(25, 25),
