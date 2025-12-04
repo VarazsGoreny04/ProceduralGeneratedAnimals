@@ -56,6 +56,10 @@ export default class Point {
 		return v1.x * v2.x + v1.y * v2.y;
 	}
 
+	static project(v1, v2) {
+		return Point.multiply(v2, Point.dot(v1, v2) / Point.dot(v1, v2));
+	}
+
 	static cosOfVectors(v1, v2) {
 		return Point.dot(v1, v2) / (Point.magnitude(v1) * Point.magnitude(v2));
 	}

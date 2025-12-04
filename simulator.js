@@ -206,7 +206,7 @@ window.setup = () => {
 	];
 	const fish = [
 		new SegmentDiscriptor(18, 18, new Eye(100, 16, 20, new Color(0, 0, 100))),
-		new SegmentDiscriptor(22, 30, new SideFin(40, 20, 20, new Color(0, 0, 190))),
+		new SegmentDiscriptor(22, 30, new SideFin(40, 12, 20, new Color(0, 0, 190))),
 		new SegmentDiscriptor(33, 34, new BackFin(2, new Color(0, 0, 190))),
 		new SegmentDiscriptor(27, 36),
 		new SegmentDiscriptor(32, 32),
@@ -216,9 +216,9 @@ window.setup = () => {
 		new SegmentDiscriptor(25, 6),
 	];
 
-	const FPS = 60;
+	const FPS = 90;
 	const speedInPixels = 10;
 	const animal = new Animal(new Point(width / 2, height / 2), fish, new Color(20, 130, 255));
 
-	setInterval(() => { animationLoop(animal, speedInPixels); }, Math.floor(1000 / FPS));
+	setInterval(() => { animationLoop(animal, Math.floor((60 / FPS) * speedInPixels)); }, Math.floor(1000 / FPS));
 }

@@ -48,20 +48,24 @@ export class SideFin extends Bodypart {
 	static drawEllipseByAngle(x, y, w, h, angle) {
 		translate(x, y);
 		rotate(radians(angle));
-		ellipse(0, 0, w, h);
+		ellipse(0, -(h / 2), w, h);
 
 		resetMatrix()
 	}
 
 	draw() {
 		const front = Segment.getFrontVector(this.segment);
-		const frontAngle = Point.angleOfVectors(new Point(0, 1), front);
+		const cosFrontAngle = Point.cosOfVectors(new Point(0, 1), front);
+		let frontAngle = Point.angleOfVectors(new Point(0, 1), front);
+
+		if (cosFrontAngle < 0)
+			frontAngle = -frontAngle + 180;
 
 		const normalLeft = Point.add(this.segment.origin, Point.normalLeft(front));
-		SideFin.drawEllipseByAngle(normalLeft.x, normalLeft.y, this.width, this.length, frontAngle);
+		SideFin.drawEllipseByAngle(normalLeft.x, normalLeft.y, this.width, this.length, frontAngle - this.angle);
 
 		const normalRight = Point.add(this.segment.origin, Point.normalRight(front));
-		SideFin.drawEllipseByAngle(normalRight.x, normalRight.y, this.width, this.length, frontAngle);
+		SideFin.drawEllipseByAngle(normalRight.x, normalRight.y, this.width, this.length, frontAngle + this.angle);
 	}
 }
 
