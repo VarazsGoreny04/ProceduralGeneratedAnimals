@@ -54,6 +54,8 @@ export class SideFin extends Bodypart {
 	}
 
 	draw() {
+		fill(this.color.r, this.color.g, this.color.b);
+
 		const front = Segment.getFrontVector(this.segment);
 		const cosFrontAngle = Point.cosOfVectors(new Point(0, 1), front);
 		let frontAngle = Point.angleOfVectors(new Point(0, 1), front);
