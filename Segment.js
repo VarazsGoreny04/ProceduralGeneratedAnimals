@@ -1,11 +1,19 @@
 import Point from './Point.js';
+import { Bodypart } from './Bodypart.js';
 
 export default class Segment {
 	constructor(origin, segmentDistance, skinRadius, bodypart) {
 		this.origin = origin;
 		this.segmentDistance = segmentDistance;
 		this.skinRadius = skinRadius;
-		this.bodypart = bodypart;
+
+		if (bodypart instanceof Bodypart) {
+			this.bodypart = bodypart;
+			this.bodypart.segment = this;
+		}
+
+		this.prevSegment = undefined;
+		this.nextSegment = undefined;
 	}
 
 	*[Symbol.iterator]() {
@@ -16,13 +24,30 @@ export default class Segment {
 		}
 	}
 
-	static step(segment, speedInPixels) {
-		const vectorToMouse = Point.subtract(Point.mouse(), segment.origin);
+	static createAndLink(startingPoint, discriptors) {
+		const result = discriptors[0].create(startingPoint);
 
-		if (Point.magnitude(vectorToMouse) < speedInPixels)
+		let current = result;
+		let next;
+
+		for (let index = 1; index < discriptors.length; ++index) {
+			next = discriptors[index].create(current.origin);
+
+			current.nextSegment = next;
+			next.prevSegment = current;
+			current = next;
+		}
+
+		return result
+	}
+
+	static step(destination, segment, speedInPixels) {
+		const vectorToDestination = Point.subtract(destination, segment.origin);
+
+		if (Point.magnitude(vectorToDestination) < speedInPixels)
 			return;
 
-		const direction = Point.multiply(Point.normalize(vectorToMouse), speedInPixels);
+		const direction = Point.multiply(Point.normalize(vectorToDestination), speedInPixels);
 
 		segment.origin = Point.add(segment.origin, direction);
 		Segment.pullNext(segment);

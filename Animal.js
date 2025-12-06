@@ -4,40 +4,9 @@ import Segment from './Segment.js';
 import { Bodypart } from './Bodypart.js';
 
 export default class Animal {
-	constructor(headPosition, radiusDiscriptors, bodyColor) {
-		this.headSegment = Animal.create(headPosition, radiusDiscriptors);
+	constructor(headPosition, discriptors, bodyColor) {
+		this.headSegment = Segment.createAndLink(headPosition, discriptors);
 		this.bodyColor = bodyColor;
-	}
-
-	static create(startingPoint, discriptors) {
-		const result = new Segment(
-			startingPoint,
-			discriptors[0].nextSegmentDistance,
-			discriptors[0].skinRadius,
-			discriptors[0].bodypart
-		);
-		if (result.bodypart instanceof Bodypart)
-			result.bodypart.segment = result;
-
-		let current = result;
-		let next;
-
-		for (let index = 1; index < discriptors.length; ++index) {
-			next = new Segment(
-				new Point(current.origin.x - discriptors[index].nextSegmentDistance, current.origin.y),
-				discriptors[index].nextSegmentDistance,
-				discriptors[index].skinRadius,
-				discriptors[index].bodypart
-			);
-			if (next.bodypart instanceof Bodypart)
-				next.bodypart.segment = next;
-
-			current.nextSegment = next;
-			next.prevSegment = current;
-			current = next;
-		}
-
-		return result
 	}
 
 	static getPoints(headSegment) {
@@ -102,7 +71,7 @@ export default class Animal {
 		}
 	}
 
-	step(speedInPixels) {
-		Segment.step(this.headSegment, speedInPixels);
+	step(destination, speedInPixels) {
+		Segment.step(destination, this.headSegment, speedInPixels);
 	}
 }

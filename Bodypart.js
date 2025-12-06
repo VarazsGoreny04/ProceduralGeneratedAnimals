@@ -1,4 +1,5 @@
 import * as bezierLine from './bezierLine.js';
+import { SegmentDiscriptor } from './Discriptor.js';
 import Point from './Point.js';
 import Segment from './Segment.js';
 
@@ -6,8 +7,8 @@ export class Bodypart {
 	static TOP = true;
 	static BOTTOM = false;
 
-	constructor(render) {
-		this.segment = undefined;
+	constructor(segment, render) {
+		this.segment = segment;
 		this.render = render;
 	}
 
@@ -15,8 +16,8 @@ export class Bodypart {
 }
 
 export class Eye extends Bodypart {
-	constructor(degreeToFront, distanceToOrigin, radius, color) {
-		super(Bodypart.BOTTOM);
+	constructor(segment, degreeToFront, distanceToOrigin, radius, color) {
+		super(segment, Bodypart.BOTTOM);
 		this.radianToFront = radians(degreeToFront);
 		this.distanceToOrigin = distanceToOrigin;
 		this.radius = radius;
@@ -37,8 +38,8 @@ export class Eye extends Bodypart {
 }
 
 export class SideFin extends Bodypart {
-	constructor(length, width, angle, color) {
-		super(Bodypart.BOTTOM);
+	constructor(segment, length, width, angle, color) {
+		super(segment, Bodypart.BOTTOM);
 		this.length = length;
 		this.width = width;
 		this.angle = angle;
@@ -57,11 +58,7 @@ export class SideFin extends Bodypart {
 		fill(this.color.r, this.color.g, this.color.b);
 
 		const front = Segment.getFrontVector(this.segment);
-		const cosFrontAngle = Point.cosOfVectors(new Point(0, 1), front);
 		let frontAngle = Point.angleOfVectors(new Point(0, 1), front);
-
-		if (cosFrontAngle < 0)
-			frontAngle = -frontAngle + 180;
 
 		const normalLeft = Point.add(this.segment.origin, Point.normalLeft(front));
 		SideFin.drawEllipseByAngle(normalLeft.x, normalLeft.y, this.width, this.length, frontAngle - this.angle);
@@ -72,13 +69,13 @@ export class SideFin extends Bodypart {
 }
 
 export class BackFin extends Bodypart {
-	constructor(lengthInSegments, color) {
-		super(Bodypart.TOP);
+	constructor(segment, lengthInSegments, color) {
+		super(segment, Bodypart.TOP);
 		this.lengthInSegments = lengthInSegments;
 		this.color = color;
 	}
 
-	static getFinPoints(fin) {
+	static getPoints(fin) {
 		const points = [];
 
 		let counter = 0;
@@ -103,45 +100,53 @@ export class BackFin extends Bodypart {
 	draw() {
 		fill(this.color.r, this.color.g, this.color.b);
 
-		bezierLine.drawLoop(BackFin.getFinPoints(this));
+		bezierLine.drawLoop(BackFin.getPoints(this));
 	}
 }
 
-/* class TailFin extends Bodypart {
-	constructor(prevSegment, nextSegment, origin, segmentDistance) {
-		this.prevSegment = prevSegment;
-		this.nextSegment = nextSegment;
-		this.origin = origin;
-		this.segmentDistance = segmentDistance;
-	}
-
-	*[Symbol.iterator]() {
-		let current = this;
-		while (current) {
-			yield current;
-			current = current.nextSegment;
-		}
-	}
-
-	static step(segment, speedInPixels) {
-		const vectorToMouse = Point.subtract(Point.mouse(), segment.origin);
-
-		if (Point.magnitude(vectorToMouse) < speedInPixels)
-			return;
-
-		const direction = Point.multiply(Point.normalize(vectorToMouse), speedInPixels);
-
-		segment.origin = Point.add(segment.origin, direction);
-		Segment.pullNext(segment);
-	}
-}
-
-class Antenna extends Bodypart {
-	constructor(segment, degreeToFront, distanceToOrigin, radius, color) {
+export class TailFin extends Bodypart {
+	constructor(segment, distances, color) {
 		super(segment, Bodypart.BOTTOM);
-		this.radianToFront = radians(degreeToFront);
-		this.distanceToOrigin = distanceToOrigin;
-		this.radius = radius;
+
+		const discriptors = [new SegmentDiscriptor(0, undefined, undefined)];
+		for (const distance of distances) {
+			discriptors.push(new SegmentDiscriptor(distance, undefined, undefined));
+		}
+
+		this.headJoint = Segment.createAndLink(segment.origin, discriptors);
+		this.color = color;
+	}
+
+	static getPoints(fin) {
+		const points = [];
+
+		for (const nextSegment of fin.headJoint)
+			points.push(nextSegment.origin);
+
+		const angle = Point.sinOfPoints(points[points.length - 3], points[points.length - 2], points[points.length - 1]);
+
+		for (let index = points.length - 1; index > 0; --index) {
+			const topPoint = Point.normalRight(Point.subtract(points[index - 1], points[index]));
+			points.push(Point.add(points[index], Point.multiply(topPoint, (index / (points.length - 1)) * 10 * angle)));
+		}
+
+		return points;
+	}
+
+	draw() {
+		this.headJoint.origin = this.segment.origin;
+		Segment.pullNext(this.headJoint);
+
+		fill(this.color.r, this.color.g, this.color.b);
+
+		bezierLine.drawLoop(TailFin.getPoints(this));
+	}
+}
+
+/* export class Antenna extends Bodypart {
+	constructor(length, width, color) {
+		super(Bodypart.TOP);
+
 		this.color = color;
 	}
 
@@ -154,9 +159,9 @@ class Antenna extends Bodypart {
 
 		eyePoint = Point.add(this.segment.origin, Point.rotateRadian(frontScaled, -this.radianToFront));
 	}
-}
+} */
 
-class Leg extends Bodypart {
+/* class Leg extends Bodypart {
 	constructor(segment) {
 		super(segment, Bodypart.BOTTOM);
 	}
