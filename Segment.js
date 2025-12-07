@@ -24,21 +24,21 @@ export default class Segment {
 		}
 	}
 
-	static createAndLink(startingPoint, discriptors) {
-		const result = discriptors[0].create(startingPoint);
+	static createAndLink(startingPoint, descriptors) {
+		const result = descriptors[0].create(startingPoint);
 
 		let current = result;
 		let next;
 
-		for (let index = 1; index < discriptors.length; ++index) {
-			next = discriptors[index].create(current.origin);
+		for (let index = 1; index < descriptors.length; ++index) {
+			next = descriptors[index].create(current.origin);
 
 			current.nextSegment = next;
 			next.prevSegment = current;
 			current = next;
 		}
 
-		return result
+		return result;
 	}
 
 	static step(destination, segment, speedInPixels) {
@@ -78,5 +78,35 @@ export default class Segment {
 		const vector = Point.subtract(prev.origin, next.origin);
 
 		return Point.multiply(Point.normalize(vector), segment.skinRadius);
+	}
+
+	static getPoints(headSegment) {
+		const angleInRadian = radians(45);
+
+		const front = Segment.getFrontVector(headSegment);
+
+		const left = [Point.add(headSegment.origin, front), Point.add(headSegment.origin, Point.rotateRadian(front, angleInRadian))];
+		const right = [Point.add(headSegment.origin, Point.rotateRadian(front, -angleInRadian))];
+
+		let end;
+
+		for (const segment of headSegment) {
+			let front = Segment.getFrontVector(segment);
+
+			left.push(Point.add(segment.origin, Point.normalLeft(front)));
+			right.push(Point.add(segment.origin, Point.normalRight(front)));
+
+			end = segment;
+		}
+
+		let back = Segment.getFrontVector(end);
+		back = new Point(-back.x, -back.y);
+
+		left.push(Point.add(end.origin, Point.rotateRadian(back, -angleInRadian)));
+		right.push(Point.add(end.origin, Point.rotateRadian(back, angleInRadian)));
+
+		left.push(Point.add(end.origin, back));
+
+		return left.reverse().concat(right);
 	}
 }

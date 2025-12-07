@@ -1,7 +1,8 @@
 import Point from './Point.js';
 import Color from './Color.js';
 import Animal from './Animal.js';
-import { SegmentDiscriptor, EyeDiscriptor, SideFinDiscriptor, BackFinDiscriptor, TailFinDiscriptor } from './Discriptor.js';
+import { Bodypart } from './Bodypart.js';
+import { AnimalDescriptor, SegmentDescriptor, EyeDescriptor, SideFinDescriptor, BackFinDescriptor, TailFinDescriptor, AntennaDescriptor } from './Descriptor.js';
 
 function animationLoop(animal, speedInPixels) {
 	const currentMousePosition = Point.mouse();
@@ -12,8 +13,7 @@ function animationLoop(animal, speedInPixels) {
 	background(20, 80, 20);
 
 	animal.step(currentMousePosition, speedInPixels);
-
-	Animal.drawByPoints(animal);
+	animal.draw();
 }
 
 window.setup = () => {
@@ -22,105 +22,113 @@ window.setup = () => {
 	stroke(0);
 	createCanvas(1600, 800);
 
-	const snake = [
-		new SegmentDiscriptor(0, 26, new EyeDiscriptor(115, 22, 10, new Color(0, 0, 0))),
-		new SegmentDiscriptor(26, 29),
-		new SegmentDiscriptor(29, 23),
-		new SegmentDiscriptor(22, 22),
-		new SegmentDiscriptor(22, 22),
-		new SegmentDiscriptor(22, 22),
-		new SegmentDiscriptor(22, 22),
-		new SegmentDiscriptor(22, 21),
-		new SegmentDiscriptor(22, 21),
-		new SegmentDiscriptor(22, 21),
-		new SegmentDiscriptor(22, 21),
-		new SegmentDiscriptor(22, 20),
-		new SegmentDiscriptor(22, 20),
-		new SegmentDiscriptor(22, 20),
-		new SegmentDiscriptor(22, 20),
-		new SegmentDiscriptor(22, 19),
-		new SegmentDiscriptor(22, 19),
-		new SegmentDiscriptor(22, 19),
-		new SegmentDiscriptor(22, 19),
-		new SegmentDiscriptor(22, 18),
-		new SegmentDiscriptor(22, 18),
-		new SegmentDiscriptor(22, 18),
-		new SegmentDiscriptor(22, 18),
-		new SegmentDiscriptor(22, 17),
-		new SegmentDiscriptor(22, 17),
-		new SegmentDiscriptor(22, 17),
-		new SegmentDiscriptor(22, 17),
-		new SegmentDiscriptor(22, 16),
-		new SegmentDiscriptor(22, 16),
-		new SegmentDiscriptor(22, 16),
-		new SegmentDiscriptor(22, 16),
-		new SegmentDiscriptor(22, 15),
-		new SegmentDiscriptor(22, 15),
-		new SegmentDiscriptor(22, 15),
-		new SegmentDiscriptor(22, 15),
-		new SegmentDiscriptor(22, 14),
-		new SegmentDiscriptor(22, 14),
-		new SegmentDiscriptor(22, 14),
-		new SegmentDiscriptor(22, 13),
-		new SegmentDiscriptor(22, 13),
-		new SegmentDiscriptor(22, 13),
-		new SegmentDiscriptor(22, 12),
-		new SegmentDiscriptor(22, 12),
-		new SegmentDiscriptor(22, 12),
-		new SegmentDiscriptor(22, 11),
-		new SegmentDiscriptor(22, 11),
-		new SegmentDiscriptor(22, 11),
-		new SegmentDiscriptor(22, 10),
-		new SegmentDiscriptor(22, 10),
-		new SegmentDiscriptor(22, 10),
-		new SegmentDiscriptor(22, 9),
-		new SegmentDiscriptor(22, 9),
-		new SegmentDiscriptor(22, 9),
-		new SegmentDiscriptor(22, 8),
-		new SegmentDiscriptor(22, 8),
-		new SegmentDiscriptor(22, 7),
-		new SegmentDiscriptor(22, 7),
-		new SegmentDiscriptor(22, 6),
-		new SegmentDiscriptor(22, 5),
-		new SegmentDiscriptor(22, 4),
-	];
-	const lizard = [
-		new SegmentDiscriptor(0, 26, new EyeDiscriptor(115, 22, 10, new Color(0, 0, 0))),
-		new SegmentDiscriptor(26, 29),
-		new SegmentDiscriptor(29, 20),
-		new SegmentDiscriptor(22, 30),
-		new SegmentDiscriptor(33, 34),
-		new SegmentDiscriptor(27, 36),
-		new SegmentDiscriptor(32, 32),
-		new SegmentDiscriptor(25, 25),
-		new SegmentDiscriptor(30, 14),
-		new SegmentDiscriptor(25, 8),
-		new SegmentDiscriptor(25, 6),
-		new SegmentDiscriptor(25, 5),
-		new SegmentDiscriptor(25, 4),
-		new SegmentDiscriptor(25, 4),
-	];
-	const fish = [
-		new SegmentDiscriptor(0, 18, new EyeDiscriptor(100, 16, 20, new Color(0, 0, 100))),
-		new SegmentDiscriptor(22, 30, new SideFinDiscriptor(40, 12, 20, new Color(0, 0, 140))),
-		new SegmentDiscriptor(33, 34, new BackFinDiscriptor(2, new Color(0, 0, 140))),
-		new SegmentDiscriptor(27, 36),
-		new SegmentDiscriptor(32, 32),
-		new SegmentDiscriptor(25, 25, new SideFinDiscriptor(20, 7, 5, new Color(0, 0, 140))),
-		new SegmentDiscriptor(30, 14),
-		new SegmentDiscriptor(20, 8),
-		new SegmentDiscriptor(15, 5),
-		new SegmentDiscriptor(10, 2,
-			new TailFinDiscriptor(
-				[20, 15, 10],
-				new Color(0, 0, 140)
-			)
-		),
-	];
+	const snake = new AnimalDescriptor(
+		new Point(width / 2, height / 2),
+		[
+			new SegmentDescriptor(0, 26, new EyeDescriptor(115, 22, 10, new Color(0, 0, 0))),
+			new SegmentDescriptor(26, 29),
+			new SegmentDescriptor(29, 23),
+			new SegmentDescriptor(22, 22),
+			new SegmentDescriptor(22, 22),
+			new SegmentDescriptor(22, 22),
+			new SegmentDescriptor(22, 22),
+			new SegmentDescriptor(22, 21),
+			new SegmentDescriptor(22, 21),
+			new SegmentDescriptor(22, 21),
+			new SegmentDescriptor(22, 21),
+			new SegmentDescriptor(22, 20),
+			new SegmentDescriptor(22, 20),
+			new SegmentDescriptor(22, 20),
+			new SegmentDescriptor(22, 20),
+			new SegmentDescriptor(22, 19),
+			new SegmentDescriptor(22, 19),
+			new SegmentDescriptor(22, 19),
+			new SegmentDescriptor(22, 19),
+			new SegmentDescriptor(22, 18),
+			new SegmentDescriptor(22, 18),
+			new SegmentDescriptor(22, 18),
+			new SegmentDescriptor(22, 18),
+			new SegmentDescriptor(22, 17),
+			new SegmentDescriptor(22, 17),
+			new SegmentDescriptor(22, 17),
+			new SegmentDescriptor(22, 17),
+			new SegmentDescriptor(22, 16),
+			new SegmentDescriptor(22, 16),
+			new SegmentDescriptor(22, 16),
+			new SegmentDescriptor(22, 16),
+			new SegmentDescriptor(22, 15),
+			new SegmentDescriptor(22, 15),
+			new SegmentDescriptor(22, 15),
+			new SegmentDescriptor(22, 15),
+			new SegmentDescriptor(22, 14),
+			new SegmentDescriptor(22, 14),
+			new SegmentDescriptor(22, 14),
+			new SegmentDescriptor(22, 13),
+			new SegmentDescriptor(22, 13),
+			new SegmentDescriptor(22, 13),
+			new SegmentDescriptor(22, 12),
+			new SegmentDescriptor(22, 12),
+			new SegmentDescriptor(22, 12),
+			new SegmentDescriptor(22, 11),
+			new SegmentDescriptor(22, 11),
+			new SegmentDescriptor(22, 11),
+			new SegmentDescriptor(22, 10),
+			new SegmentDescriptor(22, 10),
+			new SegmentDescriptor(22, 10),
+			new SegmentDescriptor(22, 9),
+			new SegmentDescriptor(22, 9),
+			new SegmentDescriptor(22, 9),
+			new SegmentDescriptor(22, 8),
+			new SegmentDescriptor(22, 8),
+			new SegmentDescriptor(22, 7),
+			new SegmentDescriptor(22, 7),
+			new SegmentDescriptor(22, 6),
+			new SegmentDescriptor(22, 5),
+			new SegmentDescriptor(22, 4)
+		],
+		new Color(190, 0, 0)
+	);
+	const lizard = new AnimalDescriptor(
+		new Point(width / 2, height / 2),
+		[
+			new SegmentDescriptor(0, 26, new EyeDescriptor(115, 22, 10, new Color(0, 0, 0))),
+			new SegmentDescriptor(26, 29),
+			new SegmentDescriptor(29, 20),
+			new SegmentDescriptor(22, 30, new AntennaDescriptor([new SegmentDescriptor(25, 10), new SegmentDescriptor(20, 10)], 80, new Color(0, 255, 0))),
+			new SegmentDescriptor(33, 34),
+			new SegmentDescriptor(27, 36),
+			new SegmentDescriptor(32, 32),
+			new SegmentDescriptor(25, 25, new AntennaDescriptor([new SegmentDescriptor(25, 10), new SegmentDescriptor(20, 10)], 80, new Color(0, 255, 0))),
+			new SegmentDescriptor(30, 14),
+			new SegmentDescriptor(25, 8),
+			new SegmentDescriptor(25, 6),
+			new SegmentDescriptor(25, 5),
+			new SegmentDescriptor(25, 4),
+			new SegmentDescriptor(25, 3),
+			new SegmentDescriptor(6, 2)
+		],
+		new Color(0, 190, 0)
+	);
+	const fish = new AnimalDescriptor(
+		new Point(width / 2, height / 2),
+		[
+			new SegmentDescriptor(0, 18, new EyeDescriptor(100, 16, 20, new Color(0, 0, 100), Bodypart.BOTTOM)),
+			new SegmentDescriptor(22, 30, new SideFinDescriptor(40, 12, 20, new Color(0, 0, 140))),
+			new SegmentDescriptor(33, 34, new BackFinDescriptor(2, new Color(0, 0, 140))),
+			new SegmentDescriptor(27, 36),
+			new SegmentDescriptor(32, 32),
+			new SegmentDescriptor(25, 25, new SideFinDescriptor(20, 7, 5, new Color(0, 0, 140))),
+			new SegmentDescriptor(30, 14),
+			new SegmentDescriptor(20, 8),
+			new SegmentDescriptor(15, 5),
+			new SegmentDescriptor(10, 2, new TailFinDescriptor([20, 15, 10], new Color(0, 0, 140)))
+		],
+		new Color(20, 130, 255)
+	);
 
 	const FPS = 60;
 	const speedInPixels = 10;
-	const animal = new Animal(new Point(width / 2, height / 2), fish, new Color(20, 130, 255));
+	const animal = snake.create();
 
 	setInterval(() => { animationLoop(animal, Math.floor((60 / FPS) * speedInPixels)); }, Math.floor(1000 / FPS));
 }

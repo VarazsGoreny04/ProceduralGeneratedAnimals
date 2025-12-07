@@ -1,5 +1,5 @@
 import * as bezierLine from './bezierLine.js';
-import { SegmentDiscriptor } from './Discriptor.js';
+import { SegmentDescriptor } from './Descriptor.js';
 import Point from './Point.js';
 import Segment from './Segment.js';
 
@@ -7,21 +7,21 @@ export class Bodypart {
 	static TOP = true;
 	static BOTTOM = false;
 
-	constructor(segment, render) {
+	constructor(segment, render, color) {
 		this.segment = segment;
 		this.render = render;
+		this.color = color;
 	}
 
 	draw() { }
 }
 
 export class Eye extends Bodypart {
-	constructor(segment, degreeToFront, distanceToOrigin, radius, color) {
-		super(segment, Bodypart.BOTTOM);
+	constructor(segment, render, degreeToFront, distanceToOrigin, radius, color) {
+		super(segment, render, color);
 		this.radianToFront = radians(degreeToFront);
 		this.distanceToOrigin = distanceToOrigin;
 		this.radius = radius;
-		this.color = color;
 	}
 
 	draw() {
@@ -38,20 +38,19 @@ export class Eye extends Bodypart {
 }
 
 export class SideFin extends Bodypart {
-	constructor(segment, length, width, angle, color) {
-		super(segment, Bodypart.BOTTOM);
+	constructor(segment, render, length, width, angle, color) {
+		super(segment, render, color);
 		this.length = length;
 		this.width = width;
 		this.angle = angle;
-		this.color = color;
 	}
 
-	static drawEllipseByAngle(x, y, w, h, angle) {
+	static drawEllipseByAngle(x, y, angle, w, h) {
 		translate(x, y);
 		rotate(radians(angle));
 		ellipse(0, -(h / 2), w, h);
 
-		resetMatrix()
+		resetMatrix();
 	}
 
 	draw() {
@@ -61,18 +60,17 @@ export class SideFin extends Bodypart {
 		let frontAngle = Point.angleOfVectors(new Point(0, 1), front);
 
 		const normalLeft = Point.add(this.segment.origin, Point.normalLeft(front));
-		SideFin.drawEllipseByAngle(normalLeft.x, normalLeft.y, this.width, this.length, frontAngle - this.angle);
+		SideFin.drawEllipseByAngle(normalLeft.x, normalLeft.y, frontAngle - this.angle, this.width, this.length);
 
 		const normalRight = Point.add(this.segment.origin, Point.normalRight(front));
-		SideFin.drawEllipseByAngle(normalRight.x, normalRight.y, this.width, this.length, frontAngle + this.angle);
+		SideFin.drawEllipseByAngle(normalRight.x, normalRight.y, frontAngle + this.angle, this.width, this.length);
 	}
 }
 
 export class BackFin extends Bodypart {
-	constructor(segment, lengthInSegments, color) {
-		super(segment, Bodypart.TOP);
+	constructor(segment, render, lengthInSegments, color) {
+		super(segment, render, color);
 		this.lengthInSegments = lengthInSegments;
-		this.color = color;
 	}
 
 	static getPoints(fin) {
@@ -105,16 +103,15 @@ export class BackFin extends Bodypart {
 }
 
 export class TailFin extends Bodypart {
-	constructor(segment, distances, color) {
-		super(segment, Bodypart.BOTTOM);
+	constructor(segment, render, distances, color) {
+		super(segment, render, color);
 
-		const discriptors = [new SegmentDiscriptor(0, undefined, undefined)];
+		const descriptors = [new SegmentDescriptor(0, undefined, undefined)];
 		for (const distance of distances) {
-			discriptors.push(new SegmentDiscriptor(distance, undefined, undefined));
+			descriptors.push(new SegmentDescriptor(distance, undefined, undefined));
 		}
 
-		this.headJoint = Segment.createAndLink(segment.origin, discriptors);
-		this.color = color;
+		this.headJoint = Segment.createAndLink(segment.origin, descriptors);
 	}
 
 	static getPoints(fin) {
@@ -143,23 +140,45 @@ export class TailFin extends Bodypart {
 	}
 }
 
-/* export class Antenna extends Bodypart {
-	constructor(length, width, color) {
-		super(Bodypart.TOP);
+export class Antenna extends Bodypart {
+	constructor(segment, render, descriptors, angle, color) {
+		super(segment, render, color);
 
-		this.color = color;
+		this.points = Segment.getPoints(Segment.createAndLink(new Point(0, 0), descriptors));
+
+		if (Math.abs(this.angle) < 1)
+			this.pointsMirrored = undefined;
+		else {
+			this.pointsMirrored = [];
+
+			for (const point of this.points)
+				this.pointsMirrored.push(new Point(point.x, -point.y));
+		}
+
+		this.angle = angle;
+	}
+
+	static drawLoopByOrientation(x, y, angle, points) {
+		translate(x, y);
+		rotate(radians(angle));
+		bezierLine.drawLoop(points);
+
+		resetMatrix();
 	}
 
 	draw() {
 		fill(this.color.r, this.color.g, this.color.b);
 
-		const frontScaled = Point.multiply(Point.normalize(Segment.getFrontVector(this.segment)), this.distanceToOrigin);
+		const bodyAngle = Point.angleOfVectors(new Point(-1, 0), Segment.getFrontVector(this.segment.prevSegment));
 
-		let eyePoint = Point.add(this.segment.origin, Point.rotateRadian(frontScaled, this.radianToFront));
-
-		eyePoint = Point.add(this.segment.origin, Point.rotateRadian(frontScaled, -this.radianToFront));
+		if (this.pointsMirrored instanceof Array) {
+			Antenna.drawLoopByOrientation(this.segment.origin.x, this.segment.origin.y, bodyAngle + this.angle, this.points);
+			Antenna.drawLoopByOrientation(this.segment.origin.x, this.segment.origin.y, bodyAngle - this.angle, this.pointsMirrored);
+		}
+		else
+			Antenna.drawLoopByOrientation(this.segment.origin.x, this.segment.origin.y, bodyAngle, this.points);
 	}
-} */
+}
 
 /* class Leg extends Bodypart {
 	constructor(segment) {
