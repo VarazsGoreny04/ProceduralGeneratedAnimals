@@ -41,11 +41,15 @@ export default class Point {
 	}
 
 	static rotateRadian(v, radian) {
+		if (Math.abs(radian) < 1e-6)
+			return v;
+
 		return new Point(cos(radian) * v.x - sin(radian) * v.y, sin(radian) * v.x + cos(radian) * v.y);
 	}
 
 	static rotateDegree(v, degree) {
-		return Point.rotate(radians(v, degree));
+		degree %= 360;
+		return Point.rotateRadian(v, radians(degree));
 	}
 
 	static mouse() {

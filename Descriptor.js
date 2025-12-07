@@ -87,11 +87,32 @@ export class TailFinDescriptor extends BodypartDescriptor {
 }
 
 export class AntennaDescriptor extends BodypartDescriptor {
-	constructor(segmentDescriptors, angle, color, render = Bodypart.TOP) {
+	constructor(antennaSegmentDescriptors, angle, color, render = Bodypart.TOP) {
 		super(render, color);
-		this.segmentDescriptors = segmentDescriptors;
+		this.segmentDescriptors = antennaSegmentDescriptors;
 		this.angle = angle;
 	}
 
 	create(segment) { return new Antenna(segment, this.render, this.segmentDescriptors, this.angle, this.color); }
+}
+
+export class AntennaSegmentDescriptor extends SegmentDescriptor {
+	constructor(segmentDistance, skinRadius, angle, bodypartDescriptor = undefined) {
+		super(segmentDistance, skinRadius, bodypartDescriptor);
+		this.angle = angle;
+	}
+
+	create(prevOrigin) {
+		const segment = new Segment(
+			Point.rotateDegree(new Point(prevOrigin.x - this.segmentDistance, prevOrigin.y), this.angle),
+			this.segmentDistance,
+			this.skinRadius,
+			undefined
+		);
+
+		if (this.bodypartDescriptor instanceof BodypartDescriptor)
+			segment.bodypart = this.bodypartDescriptor.create(segment);
+
+		return segment;
+	}
 }
