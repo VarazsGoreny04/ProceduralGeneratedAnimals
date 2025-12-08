@@ -12,8 +12,8 @@ export default class Segment {
 			this.bodypart.segment = this;
 		}
 
-		this.prevSegment = undefined;
-		this.nextSegment = undefined;
+		this.prevSegment = null;
+		this.nextSegment = null;
 	}
 
 	*[Symbol.iterator]() {
@@ -41,23 +41,14 @@ export default class Segment {
 		return result;
 	}
 
-	static step(destination, segment, speedInPixels) {
-		const vectorToDestination = Point.subtract(destination, segment.origin);
-
-		if (Point.magnitude(vectorToDestination) < speedInPixels)
-			return;
-
-		const direction = Point.multiply(Point.normalize(vectorToDestination), speedInPixels);
-
-		segment.origin = Point.add(segment.origin, direction);
-		Segment.pullNext(segment);
-	}
-
 	static pullNext(segment) {
 		if (segment.nextSegment instanceof Segment) {
-			const vector = Point.subtract(segment.nextSegment.origin, segment.origin);
+			let vector = Point.subtract(segment.nextSegment.origin, segment.origin);
+			vector = Point.multiply(Point.normalize(vector), segment.nextSegment.segmentDistance);
 
-			segment.nextSegment.origin = Point.add(segment.origin, Point.multiply(Point.normalize(vector), segment.nextSegment.segmentDistance));
+			vector = Segment.restrictAngleOfRotation(this, vector);
+
+			segment.nextSegment.origin = Point.add(segment.origin, vector);
 
 			Segment.pullNext(segment.nextSegment);
 		}
@@ -67,13 +58,11 @@ export default class Segment {
 		let prev = segment.prevSegment;
 		let next = segment.nextSegment;
 
-		if (!(prev instanceof Segment || next instanceof Segment))
+		if (!(prev instanceof Segment) && !(next instanceof Segment))
 			throw "Not enough segments!";
 
-		if (!(prev instanceof Segment))
-			prev = segment;
-		if (!(next instanceof Segment))
-			next = segment;
+		prev ??= segment;
+		next ??= segment;
 
 		const vector = Point.subtract(prev.origin, next.origin);
 
@@ -81,12 +70,12 @@ export default class Segment {
 	}
 
 	static getPoints(headSegment) {
-		const angleInRadian = radians(45);
+		const roundNoseAngle = radians(45);
 
 		const front = Segment.getFrontVector(headSegment);
 
-		const left = [Point.add(headSegment.origin, front), Point.add(headSegment.origin, Point.rotateRadian(front, angleInRadian))];
-		const right = [Point.add(headSegment.origin, Point.rotateRadian(front, -angleInRadian))];
+		const left = [Point.add(headSegment.origin, front), Point.add(headSegment.origin, Point.rotateRadian(front, roundNoseAngle))];
+		const right = [Point.add(headSegment.origin, Point.rotateRadian(front, -roundNoseAngle))];
 
 		let end;
 
@@ -102,11 +91,28 @@ export default class Segment {
 		let back = Segment.getFrontVector(end);
 		back = new Point(-back.x, -back.y);
 
-		left.push(Point.add(end.origin, Point.rotateRadian(back, -angleInRadian)));
-		right.push(Point.add(end.origin, Point.rotateRadian(back, angleInRadian)));
+		left.push(Point.add(end.origin, Point.rotateRadian(back, -roundNoseAngle)));
+		right.push(Point.add(end.origin, Point.rotateRadian(back, roundNoseAngle)));
 
 		left.push(Point.add(end.origin, back));
 
 		return left.reverse().concat(right);
+	}
+
+	static restrictAngleOfRotation(segment, direction) {
+		if (!(segment.nextSegment instanceof Segment))
+			return direction;
+
+		const MAXANGLE = 17;
+		const angle = Point.angleOfVectors(Point.subtract(Point.add(segment.origin, direction), segment.origin), Point.subtract(segment.origin, segment.nextSegment.origin));
+
+		if (Math.abs(angle) < MAXANGLE)
+			return direction;
+
+		const toRotate = (Math.sign(angle) * (Math.abs(angle) - MAXANGLE));
+
+		direction = Point.rotateDegree(direction, toRotate);
+
+		return direction;
 	}
 }

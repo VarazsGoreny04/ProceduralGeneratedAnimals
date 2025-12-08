@@ -1,4 +1,5 @@
 import * as bezierLine from './bezierLine.js';
+import Point from './Point.js';
 import Segment from './Segment.js';
 import { Bodypart } from './Bodypart.js';
 
@@ -39,6 +40,15 @@ export default class Animal {
 	}
 
 	step(destination, speedInPixels) {
-		Segment.step(destination, this.headSegment, speedInPixels);
+		const vectorToDestination = Point.subtract(destination, this.headSegment.origin);
+
+		if (Point.magnitude(vectorToDestination) < speedInPixels)
+			return;
+
+		const direction = Point.multiply(Point.normalize(vectorToDestination), speedInPixels);
+		const restrictedDirection = Segment.restrictAngleOfRotation(this.headSegment, direction);
+
+		this.headSegment.origin = Point.add(this.headSegment.origin, restrictedDirection);
+		Segment.pullNext(this.headSegment);
 	}
 }

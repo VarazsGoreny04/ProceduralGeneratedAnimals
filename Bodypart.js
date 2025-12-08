@@ -107,9 +107,8 @@ export class TailFin extends Bodypart {
 		super(segment, render, color);
 
 		const descriptors = [new SegmentDescriptor(0, undefined, undefined)];
-		for (const distance of distances) {
+		for (const distance of distances)
 			descriptors.push(new SegmentDescriptor(distance, undefined, undefined));
-		}
 
 		this.headJoint = Segment.createAndLink(segment.origin, descriptors);
 	}
@@ -147,7 +146,7 @@ export class Antenna extends Bodypart {
 		this.points = Segment.getPoints(Segment.createAndLink(new Point(0, 0), descriptors));
 
 		if (Math.abs(this.angle) < 1)
-			this.pointsMirrored = undefined;
+			this.pointsMirrored = null;
 		else {
 			this.pointsMirrored = [];
 

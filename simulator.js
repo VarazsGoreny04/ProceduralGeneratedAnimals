@@ -110,7 +110,7 @@ window.setup = () => {
 						new AntennaSegmentDescriptor(12, 6, -10)
 					],
 					90,
-					new Color(0, 255, 0)
+					new Color(0, 190, 0)
 				)
 			),
 			new SegmentDescriptor(33, 34),
@@ -119,12 +119,12 @@ window.setup = () => {
 			new SegmentDescriptor(25, 25,
 				new AntennaDescriptor(
 					[
-						new AntennaSegmentDescriptor(25, 10, 0),
-						new AntennaSegmentDescriptor(15, 8, 0),
-						new AntennaSegmentDescriptor(12, 6, 10)
+						new AntennaSegmentDescriptor(25, 13, 0),
+						new AntennaSegmentDescriptor(18, 8, 0),
+						new AntennaSegmentDescriptor(15, 6, 10)
 					],
 					110,
-					new Color(0, 255, 0)
+					new Color(0, 190, 0)
 				)
 			),
 			new SegmentDescriptor(30, 14),

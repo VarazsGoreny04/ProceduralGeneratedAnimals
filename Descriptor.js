@@ -27,7 +27,7 @@ export class SegmentDescriptor {
 			new Point(prevOrigin.x - this.segmentDistance, prevOrigin.y),
 			this.segmentDistance,
 			this.skinRadius,
-			undefined
+			null
 		);
 
 		if (this.bodypartDescriptor instanceof BodypartDescriptor)
@@ -43,7 +43,7 @@ export class BodypartDescriptor {
 		this.color = color;
 	}
 
-	create(segment) { return undefined; }
+	create(segment) { return null; }
 }
 
 export class EyeDescriptor extends BodypartDescriptor {
@@ -97,7 +97,7 @@ export class AntennaDescriptor extends BodypartDescriptor {
 }
 
 export class AntennaSegmentDescriptor extends SegmentDescriptor {
-	constructor(segmentDistance, skinRadius, angle, bodypartDescriptor = undefined) {
+	constructor(segmentDistance, skinRadius, angle, bodypartDescriptor = null) {
 		super(segmentDistance, skinRadius, bodypartDescriptor);
 		this.angle = angle;
 	}
