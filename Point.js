@@ -40,6 +40,10 @@ export default class Point {
 		return new Point(v.y, -v.x);
 	}
 
+	static reverse(v) {
+		return new Point(-v.x, -v.y);
+	}
+
 	static rotateRadian(v, radian) {
 		if (Math.abs(radian) < 1e-6)
 			return v;
@@ -91,7 +95,7 @@ export default class Point {
 		const cosAngle = Point.cosOfVectors(v1, v2);
 		let angle = degrees(asin(Point.sinOfVectors(v1, v2)));
 
-		return (cosAngle > 0) ? angle : 180 - angle;
+		return cosAngle > 0 ? angle : (angle > 0 ? 180 - angle : -180 - angle);
 	}
 
 	static angleOfPoints(a, b, c) {

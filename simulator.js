@@ -131,8 +131,9 @@ window.setup = () => {
 			new SegmentDescriptor(25, 8),
 			new SegmentDescriptor(25, 6),
 			new SegmentDescriptor(25, 5),
-			new SegmentDescriptor(25, 4),
-			new SegmentDescriptor(25, 3),
+			new SegmentDescriptor(13, 4),
+			new SegmentDescriptor(13, 3),
+			new SegmentDescriptor(12, 3),
 			new SegmentDescriptor(6, 2)
 		],
 		new Color(0, 190, 0)

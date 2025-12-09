@@ -2,9 +2,11 @@ import Point from './Point.js';
 import { Bodypart } from './Bodypart.js';
 
 export default class Segment {
-	constructor(origin, segmentDistance, skinRadius, bodypart) {
+	static MAXANGLE = 19;
+
+	constructor(origin, distanceFromPrev, skinRadius, bodypart) {
 		this.origin = origin;
-		this.segmentDistance = segmentDistance;
+		this.distanceFromPrev = distanceFromPrev;
 		this.skinRadius = skinRadius;
 
 		if (bodypart instanceof Bodypart) {
@@ -43,12 +45,10 @@ export default class Segment {
 
 	static pullNext(segment) {
 		if (segment.nextSegment instanceof Segment) {
-			let vector = Point.subtract(segment.nextSegment.origin, segment.origin);
-			vector = Point.multiply(Point.normalize(vector), segment.nextSegment.segmentDistance);
+			const fromSegmentToNext = Point.subtract(segment.nextSegment.origin, segment.origin);
+			const toJoinPoint = Point.multiply(Point.normalize(fromSegmentToNext), segment.nextSegment.distanceFromPrev);
 
-			vector = Segment.restrictAngleOfRotation(this, vector);
-
-			segment.nextSegment.origin = Point.add(segment.origin, vector);
+			segment.nextSegment.origin = Point.add(segment.origin, toJoinPoint);
 
 			Segment.pullNext(segment.nextSegment);
 		}
@@ -103,13 +103,14 @@ export default class Segment {
 		if (!(segment.nextSegment instanceof Segment))
 			return direction;
 
-		const MAXANGLE = 17;
-		const angle = Point.angleOfVectors(Point.subtract(Point.add(segment.origin, direction), segment.origin), Point.subtract(segment.origin, segment.nextSegment.origin));
+		const fromSegmentToDirection = Point.subtract(Point.add(segment.origin, direction), segment.origin);
+		const fromNextToSegment = Point.subtract(segment.origin, segment.nextSegment.origin);
+		const angle = Point.angleOfVectors(fromSegmentToDirection, fromNextToSegment);
 
-		if (Math.abs(angle) < MAXANGLE)
+		if (Math.abs(angle) < Segment.MAXANGLE)
 			return direction;
 
-		const toRotate = (Math.sign(angle) * (Math.abs(angle) - MAXANGLE));
+		const toRotate = Math.sign(angle) * (Math.abs(angle) - Segment.MAXANGLE);
 
 		direction = Point.rotateDegree(direction, toRotate);
 
