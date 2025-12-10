@@ -48,8 +48,14 @@ export default class Segment {
 			const fromSegmentToNext = Point.subtract(segment.nextSegment.origin, segment.origin);
 			let toJoinPoint = Point.multiply(Point.normalize(fromSegmentToNext), segment.nextSegment.distanceFromPrev);
 
-			if (segment.prevSegment instanceof Segment)
-				toJoinPoint = Segment.restrictAngleOfRotation(segment, segment.prevSegment, toJoinPoint);
+			if (segment.prevSegment instanceof Segment) {
+				toJoinPoint = Segment.restrictAngleOfRotation(
+					segment,
+					segment.prevSegment,
+					toJoinPoint,
+					Math.min(Segment.MAXANGLE * segment.nextSegment.distanceFromPrev / segment.skinRadius, 60)
+				);
+			}
 
 			/* if (toJoinPoint.x != finalDirection.x || toJoinPoint.y != finalDirection.y) {
 				console.log(finalDirection);
@@ -105,15 +111,15 @@ export default class Segment {
 		return left.reverse().concat(right);
 	}
 
-	static restrictAngleOfRotation(segment, nextSegment, direction) {
+	static restrictAngleOfRotation(segment, nextSegment, direction, maxAngle) {
 		const fromSegmentToDirection = Point.subtract(Point.add(segment.origin, direction), segment.origin);
 		const fromNextToSegment = Point.subtract(segment.origin, nextSegment.origin);
 		const angle = Point.angleOfVectors(fromSegmentToDirection, fromNextToSegment);
 
-		if (Math.abs(angle) < Segment.MAXANGLE)
+		if (Math.abs(angle) < maxAngle)
 			return direction;
 
-		const toRotate = Math.sign(angle) * (Math.abs(angle) - Segment.MAXANGLE);
+		const toRotate = Math.sign(angle) * (Math.abs(angle) - maxAngle);
 
 		direction = Point.rotateDegree(direction, toRotate);
 
