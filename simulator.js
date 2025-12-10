@@ -157,7 +157,7 @@ window.setup = () => {
 
 	const FPS = 60;
 	const speedInPixels = 10;
-	const animal = lizard.create();
+	const animal = snake.create();
 
 	setInterval(() => { animationLoop(animal, Math.floor((60 / FPS) * speedInPixels)); }, Math.floor(1000 / FPS));
 }

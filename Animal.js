@@ -46,7 +46,10 @@ export default class Animal {
 			return;
 
 		const direction = Point.multiply(Point.normalize(vectorToDestination), speedInPixels);
-		const restrictedDirection = Segment.restrictAngleOfRotation(this.headSegment, direction);
+
+		const restrictedDirection = this.headSegment.nextSegment instanceof Segment ?
+			Segment.restrictAngleOfRotation(this.headSegment, this.headSegment.nextSegment, direction) :
+			direction;
 
 		this.headSegment.origin = Point.add(this.headSegment.origin, restrictedDirection);
 		Segment.pullNext(this.headSegment);

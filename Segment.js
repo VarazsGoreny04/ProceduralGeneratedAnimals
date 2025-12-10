@@ -2,7 +2,7 @@ import Point from './Point.js';
 import { Bodypart } from './Bodypart.js';
 
 export default class Segment {
-	static MAXANGLE = 19;
+	static MAXANGLE = 20;
 
 	constructor(origin, distanceFromPrev, skinRadius, bodypart) {
 		this.origin = origin;
@@ -46,7 +46,14 @@ export default class Segment {
 	static pullNext(segment) {
 		if (segment.nextSegment instanceof Segment) {
 			const fromSegmentToNext = Point.subtract(segment.nextSegment.origin, segment.origin);
-			const toJoinPoint = Point.multiply(Point.normalize(fromSegmentToNext), segment.nextSegment.distanceFromPrev);
+			let toJoinPoint = Point.multiply(Point.normalize(fromSegmentToNext), segment.nextSegment.distanceFromPrev);
+
+			if (segment.prevSegment instanceof Segment)
+				toJoinPoint = Segment.restrictAngleOfRotation(segment, segment.prevSegment, toJoinPoint);
+
+			/* if (toJoinPoint.x != finalDirection.x || toJoinPoint.y != finalDirection.y) {
+				console.log(finalDirection);
+			} */
 
 			segment.nextSegment.origin = Point.add(segment.origin, toJoinPoint);
 
@@ -88,8 +95,7 @@ export default class Segment {
 			end = segment;
 		}
 
-		let back = Segment.getFrontVector(end);
-		back = new Point(-back.x, -back.y);
+		const back = Point.reverse(Segment.getFrontVector(end));
 
 		left.push(Point.add(end.origin, Point.rotateRadian(back, -roundNoseAngle)));
 		right.push(Point.add(end.origin, Point.rotateRadian(back, roundNoseAngle)));
@@ -99,12 +105,9 @@ export default class Segment {
 		return left.reverse().concat(right);
 	}
 
-	static restrictAngleOfRotation(segment, direction) {
-		if (!(segment.nextSegment instanceof Segment))
-			return direction;
-
+	static restrictAngleOfRotation(segment, nextSegment, direction) {
 		const fromSegmentToDirection = Point.subtract(Point.add(segment.origin, direction), segment.origin);
-		const fromNextToSegment = Point.subtract(segment.origin, segment.nextSegment.origin);
+		const fromNextToSegment = Point.subtract(segment.origin, nextSegment.origin);
 		const angle = Point.angleOfVectors(fromSegmentToDirection, fromNextToSegment);
 
 		if (Math.abs(angle) < Segment.MAXANGLE)
