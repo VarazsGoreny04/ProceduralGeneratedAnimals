@@ -27,6 +27,8 @@ export class SegmentDescriptor {
 			new Point(prevOrigin.x - this.segmentDistance, prevOrigin.y),
 			this.segmentDistance,
 			this.skinRadius,
+			-Segment.MAXANGLE,
+			Segment.MAXANGLE,
 			null
 		);
 

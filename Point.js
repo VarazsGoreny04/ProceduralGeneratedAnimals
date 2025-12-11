@@ -48,7 +48,10 @@ export default class Point {
 		if (Math.abs(radian) < 1e-6)
 			return v;
 
-		return new Point(cos(radian) * v.x - sin(radian) * v.y, sin(radian) * v.x + cos(radian) * v.y);
+		const sinR = sin(radian);
+		const cosR = cos(radian);
+
+		return new Point(cosR * v.x - sinR * v.y, sinR * v.x + cosR * v.y);
 	}
 
 	static rotateDegree(v, degree) {
@@ -103,5 +106,16 @@ export default class Point {
 		const v2 = Point.subtract(c, b);
 
 		return Point.angleOfVectors(v1, v2);
+	}
+
+	static restrictAngleOfRotation(baseVector, directionVector, maxAngle, minAngle) {
+		const angle = Point.angleOfVectors(baseVector, directionVector);
+
+		if (minAngle < angle && angle < maxAngle)
+			return directionVector;
+
+		const toRotate = (minAngle < angle ? maxAngle : minAngle) - angle;
+
+		return Point.rotateDegree(directionVector, toRotate);
 	}
 }

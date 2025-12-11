@@ -5,23 +5,30 @@ import { Bodypart } from './Bodypart.js';
 
 export default class Animal {
 	constructor(headPosition, descriptors, bodyColor) {
+		if (descriptors.length < 2)
+			throw "Not enough segments!";
+
 		this.headSegment = Segment.createAndLink(headPosition, descriptors);
 		this.bodyColor = bodyColor;
 	}
 
-	static drawByCircles(animal) {
-		for (const segment of animal.headSegment) {
-			if (segment.bodypart instanceof Bodypart && !segment.bodypart.render)
-				segment.bodypart.draw();
-		}
+	static drawSpine(animal) {
+		fill(0, 0, 0, 0);
+		const points = [];
+		for (const segment of animal.headSegment)
+			points.push(segment.origin);
+		bezierLine.drawLine(points);
+	}
 
+	static drawCircles(animal) {
+		fill(0, 0, 0, 0);
 		for (const segment of animal.headSegment)
 			ellipse(segment.origin.x, segment.origin.y, segment.skinRadius * 2);
+	}
 
-		for (const segment of animal.headSegment) {
-			if (segment.bodypart instanceof Bodypart && segment.bodypart.render)
-				segment.bodypart.draw();
-		}
+	static drawOutline(animal) {
+		fill(animal.bodyColor.r, animal.bodyColor.g, animal.bodyColor.b, animal.bodyColor.a);
+		bezierLine.drawLoop(Segment.getPoints(animal.headSegment));
 	}
 
 	draw() {
@@ -30,8 +37,9 @@ export default class Animal {
 				segment.bodypart.draw();
 		}
 
-		fill(this.bodyColor.r, this.bodyColor.g, this.bodyColor.b, this.bodyColor.a);
-		bezierLine.drawLoop(Segment.getPoints(this.headSegment));
+		Animal.drawOutline(this);
+		// Animal.drawCircles(this);
+		// Animal.drawSpine(this);
 
 		for (const segment of this.headSegment) {
 			if (segment.bodypart instanceof Bodypart && segment.bodypart.render)
@@ -48,7 +56,7 @@ export default class Animal {
 		const direction = Point.multiply(Point.normalize(vectorToDestination), speedInPixels);
 
 		const restrictedDirection = this.headSegment.nextSegment instanceof Segment ?
-			Segment.restrictAngleOfRotation(this.headSegment, this.headSegment.nextSegment, direction, Segment.MAXANGLE) :
+			Segment.restrictAngleOfRotation(this.headSegment, this.headSegment.nextSegment, direction) :
 			direction;
 
 		this.headSegment.origin = Point.add(this.headSegment.origin, restrictedDirection);

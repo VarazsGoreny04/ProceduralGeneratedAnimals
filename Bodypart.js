@@ -168,7 +168,7 @@ export class Antenna extends Bodypart {
 	draw() {
 		fill(this.color.r, this.color.g, this.color.b);
 
-		const bodyAngle = Point.angleOfVectors(new Point(-1, 0), Segment.getFrontVector(this.segment.prevSegment));
+		const bodyAngle = Point.angleOfVectors(new Point(-1, 0), Segment.getFrontVector(this.segment));
 
 		if (this.pointsMirrored instanceof Array) {
 			Antenna.drawLoopByOrientation(this.segment.origin.x, this.segment.origin.y, bodyAngle + this.angle, this.points);
@@ -179,8 +179,8 @@ export class Antenna extends Bodypart {
 	}
 }
 
-/* class Leg extends Bodypart {
-	constructor(segment) {
+/* export class Leg extends Bodypart {
+	constructor(segment, render, descriptors, angle, color) {
 		super(segment, Bodypart.BOTTOM);
 	}
 } */
