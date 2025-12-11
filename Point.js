@@ -94,11 +94,17 @@ export default class Point {
 		return Point.sinOfVectors(v1, v2);
 	}
 
+	static angleOfVector(v) {
+		return degrees(atan2(v.y, v.x));
+	}
+
 	static angleOfVectors(v1, v2) {
-		const cosAngle = Point.cosOfVectors(v1, v2);
+		return degrees(atan2(v2.y, v2.x) - atan2(v1.y, v1.x));
+
+		/* const cosAngle = Point.cosOfVectors(v1, v2);
 		let angle = degrees(asin(Point.sinOfVectors(v1, v2)));
 
-		return cosAngle > 0 ? angle : (angle > 0 ? 180 - angle : -180 - angle);
+		return cosAngle > 0 ? angle : (angle > 0 ? 180 - angle : -180 - angle); */
 	}
 
 	static angleOfPoints(a, b, c) {

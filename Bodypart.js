@@ -57,7 +57,7 @@ export class SideFin extends Bodypart {
 		fill(this.color.r, this.color.g, this.color.b);
 
 		const front = Segment.getFrontVector(this.segment);
-		let frontAngle = Point.angleOfVectors(new Point(0, 1), front);
+		let frontAngle = Point.angleOfVector(Point.normalRight(front));
 
 		const normalLeft = Point.add(this.segment.origin, Point.normalLeft(front));
 		SideFin.drawEllipseByAngle(normalLeft.x, normalLeft.y, frontAngle - this.angle, this.width, this.length);
@@ -168,7 +168,7 @@ export class Antenna extends Bodypart {
 	draw() {
 		fill(this.color.r, this.color.g, this.color.b);
 
-		const bodyAngle = Point.angleOfVectors(new Point(-1, 0), Segment.getFrontVector(this.segment));
+		const bodyAngle = Point.angleOfVector(Point.reverse(Segment.getFrontVector(this.segment)));
 
 		if (this.pointsMirrored instanceof Array) {
 			Antenna.drawLoopByOrientation(this.segment.origin.x, this.segment.origin.y, bodyAngle + this.angle, this.points);
@@ -179,8 +179,14 @@ export class Antenna extends Bodypart {
 	}
 }
 
-/* export class Leg extends Bodypart {
-	constructor(segment, render, descriptors, angle, color) {
-		super(segment, Bodypart.BOTTOM);
+export class Leg extends Bodypart {
+	constructor(segment, render, descriptors, color) {
+		super(segment, render, color);
+
+		this.points = Segment.getPoints(Segment.createAndLink(new Point(0, 0), descriptors));
 	}
-} */
+
+	draw() {
+
+	}
+}

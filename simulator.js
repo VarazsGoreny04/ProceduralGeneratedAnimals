@@ -9,7 +9,9 @@ import {
 	BackFinDescriptor,
 	TailFinDescriptor,
 	AntennaDescriptor,
-	AntennaSegmentDescriptor
+	AntennaSegmentDescriptor,
+	LegDescriptor,
+	LegSegmentDescriptor
 } from './Descriptor.js';
 
 function animationLoop(animal, speedInPixels) {
@@ -25,6 +27,19 @@ function animationLoop(animal, speedInPixels) {
 }
 
 window.setup = () => {
+	const middle = new Point(width / 2, height / 2);
+	const vector = new Point(1, 0);
+
+	fill(255, 255, 255);
+	ellipse(middle.x, middle.y, 10, 10);
+
+	setInterval(() => {
+		const mouse = Point.subtract(Point.mouse(), middle);
+		console.log(Point.angleOfVectors(vector, mouse));
+	});
+}
+
+function test() {
 	strokeCap(ROUND);
 	strokeJoin(ROUND);
 	stroke(0);
@@ -156,8 +171,8 @@ window.setup = () => {
 	);
 
 	const FPS = 60;
-	const speedInPixels = 10;
-	const animal = snake.create();
+	const speedInPixels = 6;
+	const animal = lizard.create();
 
 	setInterval(() => { animationLoop(animal, Math.floor((60 / FPS) * speedInPixels)); }, Math.floor(1000 / FPS));
 }

@@ -1,7 +1,7 @@
 import Point from './Point.js';
 import Segment from './Segment.js';
 import Animal from './Animal.js';
-import { Eye, BackFin, SideFin, TailFin, Bodypart, Antenna } from './Bodypart.js';
+import { Eye, BackFin, SideFin, TailFin, Bodypart, Antenna, Leg } from './Bodypart.js';
 
 export class AnimalDescriptor {
 	constructor(headPosition, segmentDescriptors, color) {
@@ -102,6 +102,38 @@ export class AntennaSegmentDescriptor extends SegmentDescriptor {
 	constructor(segmentDistance, skinRadius, angle, bodypartDescriptor = null) {
 		super(segmentDistance, skinRadius, bodypartDescriptor);
 		this.angle = angle;
+	}
+
+	create(prevOrigin) {
+		const segment = new Segment(
+			Point.rotateDegree(new Point(prevOrigin.x - this.segmentDistance, prevOrigin.y), this.angle),
+			this.segmentDistance,
+			this.skinRadius,
+			undefined
+		);
+
+		if (this.bodypartDescriptor instanceof BodypartDescriptor)
+			segment.bodypart = this.bodypartDescriptor.create(segment);
+
+		return segment;
+	}
+}
+
+export class LegDescriptor extends BodypartDescriptor {
+	constructor(legSegmentDescriptors, color, render = Bodypart.TOP) {
+		super(render, color);
+		this.segmentDescriptors = legSegmentDescriptors;
+		this.angle = angle;
+	}
+
+	create(segment) { return new Leg(segment, this.render, this.segmentDescriptors, this.angle, this.color); }
+}
+
+export class LegSegmentDescriptor extends SegmentDescriptor {
+	constructor(segmentDistance, skinRadius, minAngle, maxAngle, bodypartDescriptor = null) {
+		super(segmentDistance, skinRadius, bodypartDescriptor);
+		this.minAngle = minAngle;
+		this.maxAngle = maxAngle;
 	}
 
 	create(prevOrigin) {

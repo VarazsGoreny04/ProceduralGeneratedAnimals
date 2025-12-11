@@ -6,7 +6,7 @@ import { Bodypart } from './Bodypart.js';
 export default class Animal {
 	constructor(headPosition, descriptors, bodyColor) {
 		if (descriptors.length < 2)
-			throw "Not enough segments!";
+			throw "An animal must have at least 2 segments!";
 
 		this.headSegment = Segment.createAndLink(headPosition, descriptors);
 		this.bodyColor = bodyColor;
