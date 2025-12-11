@@ -27,8 +27,8 @@ function animationLoop(animal, speedInPixels) {
 }
 
 window.setup = () => {
-	const middle = new Point(width / 2, height / 2);
-	const vector = new Point(1, 0);
+	/* const middle = new Point(width / 2, height / 2);
+	const vector = new Point(1, 1);
 
 	fill(255, 255, 255);
 	ellipse(middle.x, middle.y, 10, 10);
@@ -39,7 +39,7 @@ window.setup = () => {
 	});
 }
 
-function test() {
+function test() { */
 	strokeCap(ROUND);
 	strokeJoin(ROUND);
 	stroke(0);

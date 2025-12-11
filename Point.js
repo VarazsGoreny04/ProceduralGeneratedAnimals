@@ -99,7 +99,9 @@ export default class Point {
 	}
 
 	static angleOfVectors(v1, v2) {
-		return degrees(atan2(v2.y, v2.x) - atan2(v1.y, v1.x));
+		const angle = degrees(atan2(v2.y, v2.x) - atan2(v1.y, v1.x));
+
+		return angle > 180 ? angle - 360 : (angle < -180 ? angle + 360 : angle);
 
 		/* const cosAngle = Point.cosOfVectors(v1, v2);
 		let angle = degrees(asin(Point.sinOfVectors(v1, v2)));
