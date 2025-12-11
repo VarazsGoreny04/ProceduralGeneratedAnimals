@@ -106,9 +106,18 @@ export class TailFin extends Bodypart {
 	constructor(segment, render, distances, color) {
 		super(segment, render, color);
 
-		const descriptors = [new SegmentDescriptor(0, undefined, undefined)];
-		for (const distance of distances)
-			descriptors.push(new SegmentDescriptor(distance, undefined, undefined));
+		let nextFinPart = new SegmentDescriptor(0, 1, undefined);
+		nextFinPart.maxAngle = 60;
+		nextFinPart.minAngle = -60;
+
+		const descriptors = [nextFinPart];
+		for (const distance of distances) {
+			nextFinPart = new SegmentDescriptor(distance, 1, undefined);
+			nextFinPart.maxAngle = 60;
+			nextFinPart.minAngle = -60;
+
+			descriptors.push(nextFinPart);
+		}
 
 		this.headJoint = Segment.createAndLink(segment.origin, descriptors);
 	}
@@ -120,6 +129,7 @@ export class TailFin extends Bodypart {
 			points.push(nextSegment.origin);
 
 		const angle = Point.sinOfPoints(points[points.length - 3], points[points.length - 2], points[points.length - 1]);
+
 
 		for (let index = points.length - 1; index > 0; --index) {
 			const topPoint = Point.normalRight(Point.subtract(points[index - 1], points[index]));

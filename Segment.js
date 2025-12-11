@@ -1,19 +1,19 @@
 import Point from './Point.js';
-import { Bodypart } from './Bodypart.js';
 
 export default class Segment {
 	static MAXANGLE = 20;
 
-	constructor(origin, distanceFromPrev, skinRadius, bodypart) {
+	constructor(origin, distanceFromPrev, skinRadius, bodyparts) {
 		this.origin = origin;
 		this.distanceFromPrev = distanceFromPrev;
 		this.skinRadius = skinRadius;
 		this.maxAngle = Math.min(Segment.MAXANGLE * this.distanceFromPrev / this.skinRadius, 60);
 		this.minAngle = -this.maxAngle;
 
-		if (bodypart instanceof Bodypart) {
-			this.bodypart = bodypart;
-			this.bodypart.segment = this;
+		this.bodyparts = bodyparts;
+		if (bodyparts instanceof Array) {
+			for (const bodypart of bodyparts)
+				bodypart.segment = this;
 		}
 
 		this.prevSegment = null;

@@ -16,10 +16,10 @@ export class AnimalDescriptor {
 }
 
 export class SegmentDescriptor {
-	constructor(segmentDistance, skinRadius, bodypartDescriptor = undefined) {
+	constructor(segmentDistance, skinRadius, bodypartDescriptors = undefined) {
 		this.segmentDistance = segmentDistance;
 		this.skinRadius = skinRadius;
-		this.bodypartDescriptor = bodypartDescriptor;
+		this.bodypartDescriptors = bodypartDescriptors;
 	}
 
 	create(prevOrigin) {
@@ -27,13 +27,15 @@ export class SegmentDescriptor {
 			new Point(prevOrigin.x - this.segmentDistance, prevOrigin.y),
 			this.segmentDistance,
 			this.skinRadius,
-			-Segment.MAXANGLE,
-			Segment.MAXANGLE,
 			null
 		);
 
-		if (this.bodypartDescriptor instanceof BodypartDescriptor)
-			segment.bodypart = this.bodypartDescriptor.create(segment);
+		if (this.bodypartDescriptors instanceof Array) {
+			segment.bodyparts = [];
+
+			for (const bodypartDescriptor of this.bodypartDescriptors)
+				segment.bodyparts.push(bodypartDescriptor.create(segment));
+		}
 
 		return segment;
 	}
@@ -112,8 +114,8 @@ export class AntennaSegmentDescriptor extends SegmentDescriptor {
 			undefined
 		);
 
-		if (this.bodypartDescriptor instanceof BodypartDescriptor)
-			segment.bodypart = this.bodypartDescriptor.create(segment);
+		if (this.bodypartDescriptors instanceof BodypartDescriptor)
+			segment.bodyparts = this.bodypartDescriptors.create(segment);
 
 		return segment;
 	}
@@ -138,14 +140,14 @@ export class LegSegmentDescriptor extends SegmentDescriptor {
 
 	create(prevOrigin) {
 		const segment = new Segment(
-			Point.rotateDegree(new Point(prevOrigin.x - this.segmentDistance, prevOrigin.y), this.angle),
+			new Point(prevOrigin.x, prevOrigin.y + this.segmentDistance),
 			this.segmentDistance,
 			this.skinRadius,
 			undefined
 		);
 
-		if (this.bodypartDescriptor instanceof BodypartDescriptor)
-			segment.bodypart = this.bodypartDescriptor.create(segment);
+		if (this.bodypartDescriptors instanceof BodypartDescriptor)
+			segment.bodyparts = this.bodypartDescriptors.create(segment);
 
 		return segment;
 	}

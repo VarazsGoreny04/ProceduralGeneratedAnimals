@@ -48,7 +48,7 @@ function test() { */
 	const snake = new AnimalDescriptor(
 		new Point(width / 2, height / 2),
 		[
-			new SegmentDescriptor(0, 26, new EyeDescriptor(115, 22, 10, new Color(0, 0, 0))),
+			new SegmentDescriptor(0, 26, [new EyeDescriptor(115, 22, 10, new Color(0, 0, 0))]),
 			new SegmentDescriptor(26, 29),
 			new SegmentDescriptor(29, 23),
 			new SegmentDescriptor(22, 22),
@@ -114,11 +114,11 @@ function test() { */
 	const lizard = new AnimalDescriptor(
 		new Point(width / 2, height / 2),
 		[
-			new SegmentDescriptor(0, 26, new EyeDescriptor(115, 22, 10, new Color(0, 0, 0))),
+			new SegmentDescriptor(0, 26, [new EyeDescriptor(115, 22, 10, new Color(0, 0, 0))]),
 			new SegmentDescriptor(26, 29),
 			new SegmentDescriptor(29, 20),
 			new SegmentDescriptor(22, 30,
-				new AntennaDescriptor(
+				[new AntennaDescriptor(
 					[
 						new AntennaSegmentDescriptor(25, 10, 0),
 						new AntennaSegmentDescriptor(15, 8, 0),
@@ -126,13 +126,13 @@ function test() { */
 					],
 					90,
 					new Color(0, 190, 0)
-				)
+				)]
 			),
 			new SegmentDescriptor(33, 34),
 			new SegmentDescriptor(27, 36),
 			new SegmentDescriptor(32, 32),
 			new SegmentDescriptor(25, 25,
-				new AntennaDescriptor(
+				[new AntennaDescriptor(
 					[
 						new AntennaSegmentDescriptor(25, 13, 0),
 						new AntennaSegmentDescriptor(18, 8, 0),
@@ -140,7 +140,7 @@ function test() { */
 					],
 					110,
 					new Color(0, 190, 0)
-				)
+				)]
 			),
 			new SegmentDescriptor(30, 14),
 			new SegmentDescriptor(25, 8),
@@ -156,23 +156,28 @@ function test() { */
 	const fish = new AnimalDescriptor(
 		new Point(width / 2, height / 2),
 		[
-			new SegmentDescriptor(0, 18, 0, new EyeDescriptor(100, 16, 20, new Color(0, 0, 100), Bodypart.BOTTOM)),
-			new SegmentDescriptor(22, 30, 0, new SideFinDescriptor(40, 12, 20, new Color(0, 0, 140))),
-			new SegmentDescriptor(33, 34, 0, new BackFinDescriptor(2, new Color(0, 0, 140))),
+			new SegmentDescriptor(0, 18, [new EyeDescriptor(100, 16, 20, new Color(0, 0, 100), Bodypart.BOTTOM)]),
+			new SegmentDescriptor(22, 30),
+			new SegmentDescriptor(33, 34,
+				[
+					new SideFinDescriptor(40, 12, 20, new Color(0, 0, 140)),
+					new BackFinDescriptor(3, new Color(0, 0, 140))
+				]
+			),
 			new SegmentDescriptor(27, 36),
 			new SegmentDescriptor(32, 32),
-			new SegmentDescriptor(25, 25, 0, new SideFinDescriptor(20, 7, 5, new Color(0, 0, 140))),
+			new SegmentDescriptor(25, 25),
 			new SegmentDescriptor(30, 14),
 			new SegmentDescriptor(20, 8),
 			new SegmentDescriptor(15, 5),
-			new SegmentDescriptor(10, 2, 0, new TailFinDescriptor([20, 15, 10], new Color(0, 0, 140)))
+			new SegmentDescriptor(10, 2, [new TailFinDescriptor([20, 15, 10], new Color(0, 0, 140))])
 		],
 		new Color(20, 130, 255)
 	);
 
 	const FPS = 60;
 	const speedInPixels = 6;
-	const animal = lizard.create();
+	const animal = fish.create();
 
 	setInterval(() => { animationLoop(animal, Math.floor((60 / FPS) * speedInPixels)); }, Math.floor(1000 / FPS));
 }
