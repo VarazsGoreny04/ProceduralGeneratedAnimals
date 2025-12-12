@@ -4,14 +4,16 @@ import Animal from './Animal.js';
 import { Eye, BackFin, SideFin, TailFin, Bodypart, Antenna, Leg } from './Bodypart.js';
 
 export class AnimalDescriptor {
-	constructor(headPosition, segmentDescriptors, color) {
+	constructor(headPosition, segmentDescriptors, turnAngle, color, speed) {
 		this.headPosition = headPosition;
 		this.segmentDescriptors = segmentDescriptors;
+		this.turnAngle = turnAngle;
 		this.color = color;
+		this.speed = speed;
 	}
 
 	create() {
-		return new Animal(this.headPosition, this.segmentDescriptors, this.color);
+		return new Animal(this.headPosition, this.segmentDescriptors, this.turnAngle, this.color, this.speed);
 	}
 }
 
@@ -122,12 +124,13 @@ export class AntennaSegmentDescriptor extends SegmentDescriptor {
 }
 
 export class LegDescriptor extends BodypartDescriptor {
-	constructor(legSegmentDescriptors, color, render = Bodypart.TOP) {
+	constructor(legSegmentDescriptors, stepTo, color, render = Bodypart.BOTTOM) {
 		super(render, color);
 		this.segmentDescriptors = legSegmentDescriptors;
+		this.stepTo = stepTo;
 	}
 
-	create(segment) { return new Leg(segment, this.render, this.segmentDescriptors, this.color); }
+	create(segment) { return new Leg(segment, this.render, this.segmentDescriptors, this.stepTo, this.color); }
 }
 
 export class LegSegmentDescriptor extends SegmentDescriptor {

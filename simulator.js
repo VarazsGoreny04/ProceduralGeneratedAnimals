@@ -155,7 +155,9 @@ function test1() { */
 			new SegmentDescriptor(22, 5),
 			new SegmentDescriptor(22, 4)
 		],
-		new Color(190, 0, 0)
+		22,
+		new Color(190, 0, 0),
+		8
 	);
 	const lizard = new AnimalDescriptor(
 		new Point(width / 2, height / 2),
@@ -167,10 +169,11 @@ function test1() { */
 				[
 					new LegDescriptor(
 						[
-							new LegSegmentDescriptor(22, 10, 0, 0),
-							new LegSegmentDescriptor(15, 8, 5, 145),
-							new LegSegmentDescriptor(12, 6, 0, 0)
+							new LegSegmentDescriptor(25, 10, 0, 0),
+							new LegSegmentDescriptor(18, 8, 5, 145),
+							new LegSegmentDescriptor(15, 6, 0, 0)
 						],
+						new Point(18, 25),
 						new Color(0, 190, 0)
 					)
 				]
@@ -179,15 +182,17 @@ function test1() { */
 			new SegmentDescriptor(27, 36),
 			new SegmentDescriptor(32, 32),
 			new SegmentDescriptor(25, 25,
-				[new AntennaDescriptor(
-					[
-						new AntennaSegmentDescriptor(25, 13, 0),
-						new AntennaSegmentDescriptor(18, 8, 0),
-						new AntennaSegmentDescriptor(15, 6, 10)
-					],
-					110,
-					new Color(0, 190, 0)
-				)]
+				[
+					new LegDescriptor(
+						[
+							new LegSegmentDescriptor(28, 13, 0, 0),
+							new LegSegmentDescriptor(21, 8, -145, -5),
+							new LegSegmentDescriptor(18, 6, 0, 0)
+						],
+						new Point(18, 0),
+						new Color(0, 190, 0)
+					)
+				]
 			),
 			new SegmentDescriptor(30, 14),
 			new SegmentDescriptor(25, 8),
@@ -198,7 +203,9 @@ function test1() { */
 			new SegmentDescriptor(12, 3),
 			new SegmentDescriptor(6, 2)
 		],
-		new Color(0, 190, 0)
+		14,
+		new Color(0, 190, 0),
+		3
 	);
 	const fish = new AnimalDescriptor(
 		new Point(width / 2, height / 2),
@@ -219,15 +226,16 @@ function test1() { */
 			new SegmentDescriptor(15, 5),
 			new SegmentDescriptor(10, 2, [new TailFinDescriptor([10, 10, 10, 10, 10], new Color(0, 0, 140))])
 		],
-		new Color(20, 130, 255)
+		20,
+		new Color(20, 130, 255),
+		10
 	);
 
 	const FPS = 60;
-	const speedInPixels = 4;
 	const animal = lizard.create();
 
 
 	background(20, 80, 20);
 	animal.draw();
-	setInterval(() => { animationLoop(animal, Math.floor((60 / FPS) * speedInPixels)); }, Math.floor(1000 / FPS));
+	setInterval(() => { animationLoop(animal, Math.floor((60 / FPS) * animal.speed)); }, Math.floor(1000 / FPS));
 }

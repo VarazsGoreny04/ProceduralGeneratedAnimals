@@ -3,15 +3,17 @@ import Point from './Point.js';
 import Segment from './Segment.js';
 
 export default class Animal {
-	constructor(headPosition, descriptors, bodyColor) {
+	constructor(headPosition, descriptors, turnAngle, bodyColor, speed) {
 		if (descriptors.length < 2)
 			throw "An animal must have at least 2 segments!";
 
 		this.headSegment = Segment.createAndLink(headPosition, descriptors);
 		this.bodyColor = bodyColor;
 
-		this.headSegment.maxAngle = Segment.MAXANGLE;
+		this.headSegment.maxAngle = turnAngle;
 		this.headSegment.minAngle = -this.headSegment.maxAngle;
+
+		this.speed = speed;
 	}
 
 	static drawSpine(animal) {
@@ -57,13 +59,13 @@ export default class Animal {
 		}
 	}
 
-	step(destination, speedInPixels) {
+	step(destination) {
 		const vectorToDestination = Point.subtract(destination, this.headSegment.origin);
 
-		if (Point.magnitude(vectorToDestination) < speedInPixels)
+		if (Point.magnitude(vectorToDestination) < this.speed)
 			return;
 
-		const direction = Point.scale(vectorToDestination, speedInPixels);
+		const direction = Point.scale(vectorToDestination, this.speed);
 
 		const restrictedDirection = this.headSegment.nextSegment instanceof Segment ?
 			Segment.restrictAngleOfRotation(this.headSegment, this.headSegment.nextSegment, direction) :
