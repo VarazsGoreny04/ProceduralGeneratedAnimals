@@ -32,6 +32,10 @@ export default class Point {
 		return Point.divide(v, Point.magnitude(v));
 	}
 
+	static scale(v, s) {
+		return Point.multiply(Point.normalize(v), s);
+	}
+
 	static normalLeft(v) {
 		return new Point(-v.y, v.x);
 	}

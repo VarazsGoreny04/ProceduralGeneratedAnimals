@@ -1,5 +1,5 @@
 import * as bezierLine from './bezierLine.js';
-import { SegmentDescriptor } from './Descriptor.js';
+import { LegSegmentDescriptor, SegmentDescriptor } from './Descriptor.js';
 import Point from './Point.js';
 import Segment from './Segment.js';
 
@@ -27,7 +27,7 @@ export class Eye extends Bodypart {
 	draw() {
 		fill(this.color.r, this.color.g, this.color.b, this.color.a);
 
-		const frontScaled = Point.multiply(Point.normalize(Segment.getFrontVector(this.segment)), this.distanceToOrigin);
+		const frontScaled = Point.scale(Segment.getFrontVector(this.segment), this.distanceToOrigin);
 
 		let eyePoint = Point.add(this.segment.origin, Point.rotateRadian(frontScaled, this.radianToFront));
 		ellipse(eyePoint.x, eyePoint.y, this.radius, this.radius);
@@ -54,7 +54,7 @@ export class SideFin extends Bodypart {
 	}
 
 	draw() {
-		fill(this.color.r, this.color.g, this.color.b);
+		fill(this.color.r, this.color.g, this.color.b, this.color.a);
 
 		const front = Segment.getFrontVector(this.segment);
 		let frontAngle = Point.angleOfVector(Point.normalRight(front));
@@ -96,7 +96,7 @@ export class BackFin extends Bodypart {
 	}
 
 	draw() {
-		fill(this.color.r, this.color.g, this.color.b);
+		fill(this.color.r, this.color.g, this.color.b, this.color.a);
 
 		bezierLine.drawLoop(BackFin.getPoints(this));
 	}
@@ -139,7 +139,7 @@ export class TailFin extends Bodypart {
 		this.headJoint.origin = this.segment.origin;
 		Segment.pullNext(this.headJoint);
 
-		fill(this.color.r, this.color.g, this.color.b);
+		fill(this.color.r, this.color.g, this.color.b, this.color.a);
 
 		bezierLine.drawLoop(TailFin.getPoints(this));
 	}
@@ -172,7 +172,7 @@ export class Antenna extends Bodypart {
 	}
 
 	draw() {
-		fill(this.color.r, this.color.g, this.color.b);
+		fill(this.color.r, this.color.g, this.color.b, this.color.a);
 
 		const bodyAngle = Point.angleOfVector(Point.reverse(Segment.getFrontVector(this.segment)));
 
@@ -185,11 +185,9 @@ export class Antenna extends Bodypart {
 	}
 }
 
-export class Leg extends Bodypart {
-	constructor(segment, render, descriptors, color) {
-		super(segment, render, color);
-
-		this.joinSegment = Segment.createAndLink(segment.origin, descriptors);
+class OneLeg {
+	constructor(origin, descriptors) {
+		this.joinSegment = Segment.createAndLink(origin, descriptors);
 
 		let counter = 0;
 		let end = null;
@@ -215,27 +213,46 @@ export class Leg extends Bodypart {
 		Segment.pullNext(leg.joinSegment);
 	}
 
-	static break(leg) {
+	static break(origin, leg) {
 		for (const segment of leg.joinSegment)
-			segment.origin = Point.subtract(Point.multiply(leg.segment.origin, 2), segment.origin);
+			segment.origin = Point.subtract(Point.multiply(origin, 2), segment.origin);
+	}
+
+	static draw(segment, leg, color) {
+		OneLeg.twoWayKinematics(leg);
+
+		if (Point.magnitude(Point.subtract(leg.standsOn, leg.endSegment.origin)) > leg.endSegment.distanceFromPrev) {
+			OneLeg.break(segment.origin, leg);
+
+			for (let i = 0; i < 5; ++i)
+				OneLeg.twoWayKinematics(leg);
+		}
+
+		fill(color.r, color.g, color.b, color.a);
+
+		bezierLine.drawLoop(Segment.getPoints(leg.joinSegment));
+	}
+}
+
+export class Leg extends Bodypart {
+	constructor(segment, render, descriptors, color) {
+		super(segment, render, color);
+		this.left = new OneLeg(segment.origin, descriptors);
+
+		const mirroredDiscriptors = [];
+		for (const discriptor of descriptors)
+			mirroredDiscriptors.push(LegSegmentDescriptor.mirror(discriptor));
+
+		this.right = new OneLeg(segment.origin, mirroredDiscriptors);
 	}
 
 	draw() {
-		this.joinSegment.origin = this.segment.origin;
+		const frontVector = Point.normalize(Segment.getFrontVector(this.segment));
 
-		Leg.twoWayKinematics(this);
+		this.left.joinSegment.origin = Point.add(this.segment.origin, Point.scale(Point.normalLeft(frontVector), this.left.joinSegment.distanceFromPrev));
+		OneLeg.draw(this.segment, this.left, this.color);
 
-		if (Point.magnitude(Point.subtract(this.standsOn, this.endSegment.origin)) > this.endSegment.distanceFromPrev) {
-			Leg.break(this);
-
-			for (let i = 0; i < 10; ++i)
-				Leg.twoWayKinematics(this);
-		}
-
-		this.standsOn = this.endSegment.origin;
-
-		fill(this.color.r, this.color.g, this.color.b);
-
-		bezierLine.drawLoop(Segment.getPoints(this.joinSegment));
+		this.right.joinSegment.origin = Point.add(this.segment.origin, Point.scale(Point.normalRight(frontVector), this.right.joinSegment.distanceFromPrev));
+		OneLeg.draw(this.segment, this.right, this.color);
 	}
 }

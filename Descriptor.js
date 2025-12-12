@@ -18,14 +18,14 @@ export class AnimalDescriptor {
 export class SegmentDescriptor {
 	constructor(segmentDistance, skinRadius, bodypartDescriptors = undefined) {
 		this.segmentDistance = segmentDistance;
-		this.skinRadius = skinRadius;
+		this.skinRadius = Math.abs(skinRadius);
 		this.bodypartDescriptors = bodypartDescriptors;
 	}
 
 	create(prevOrigin) {
 		const segment = new Segment(
 			new Point(prevOrigin.x - this.segmentDistance, prevOrigin.y),
-			this.segmentDistance,
+			Math.abs(this.segmentDistance),
 			this.skinRadius,
 			null
 		);
@@ -53,9 +53,9 @@ export class BodypartDescriptor {
 export class EyeDescriptor extends BodypartDescriptor {
 	constructor(degreeToFront, distanceToOrigin, radius, color, render = Bodypart.TOP) {
 		super(render, color);
-		this.degreeToFront = degreeToFront;
-		this.distanceToOrigin = distanceToOrigin;
-		this.radius = radius;
+		this.degreeToFront = Math.abs(degreeToFront);
+		this.distanceToOrigin = Math.abs(distanceToOrigin);
+		this.radius = Math.abs(radius);
 	}
 
 	create(segment) { return new Eye(segment, this.render, this.degreeToFront, this.distanceToOrigin, this.radius, this.color); }
@@ -64,8 +64,8 @@ export class EyeDescriptor extends BodypartDescriptor {
 export class SideFinDescriptor extends BodypartDescriptor {
 	constructor(length, width, angle, color, render = Bodypart.BOTTOM) {
 		super(render, color);
-		this.length = length;
-		this.width = width;
+		this.length = Math.abs(length);
+		this.width = Math.abs(width);
 		this.angle = angle;
 	}
 
@@ -133,14 +133,31 @@ export class LegDescriptor extends BodypartDescriptor {
 export class LegSegmentDescriptor extends SegmentDescriptor {
 	constructor(segmentDistance, skinRadius, minAngle, maxAngle, bodypartDescriptor = null) {
 		super(segmentDistance, skinRadius, bodypartDescriptor);
+
 		this.minAngle = minAngle;
 		this.maxAngle = maxAngle;
+
+		if (this.minAngle > this.maxAngle) {
+			const temp = this.minAngle;
+			this.minAngle = this.maxAngle;
+			this.maxAngle = temp;
+		}
+	}
+
+	static mirror(discriptor) {
+		return new LegSegmentDescriptor(
+			-discriptor.segmentDistance,
+			discriptor.skinRadius,
+			-discriptor.maxAngle,
+			-discriptor.minAngle,
+			discriptor.bodypartDescriptor
+		);
 	}
 
 	create(prevOrigin) {
 		const segment = new Segment(
-			new Point(prevOrigin.x, prevOrigin.y + this.segmentDistance),
-			this.segmentDistance,
+			new Point(prevOrigin.x, prevOrigin.y - this.segmentDistance),
+			Math.abs(this.segmentDistance),
 			this.skinRadius,
 			null
 		);

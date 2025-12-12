@@ -48,13 +48,12 @@ export default class Segment {
 
 	static pull(segment, segmentToPull, distanceBetween, segmentInFront = null) {
 		const fromSegmentToNext = Point.subtract(segmentToPull.origin, segment.origin);
-		let toJoinPoint = Point.multiply(Point.normalize(fromSegmentToNext), distanceBetween);
+		let toJoinPoint = Point.scale(fromSegmentToNext, distanceBetween);
 
 		if (segmentInFront instanceof Segment)
 			toJoinPoint = Segment.restrictAngleOfRotation(segment, segmentInFront, toJoinPoint);
 
 		segmentToPull.origin = Point.add(segment.origin, toJoinPoint);
-		ellipse(segmentToPull.origin.x, segmentToPull.origin.y, 3, 3);
 	}
 
 	static pullNext(segment) {
@@ -85,7 +84,7 @@ export default class Segment {
 
 		const vector = Point.subtract(prev.origin, next.origin);
 
-		return Point.multiply(Point.normalize(vector), segment.skinRadius);
+		return Point.scale(vector, segment.skinRadius);
 	}
 
 	static getPoints(headSegment) {

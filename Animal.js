@@ -11,7 +11,7 @@ export default class Animal {
 		this.bodyColor = bodyColor;
 
 		this.headSegment.maxAngle = Segment.MAXANGLE;
-		this.headSegment.minAngle = this.headSegment.maxAngle;
+		this.headSegment.minAngle = -this.headSegment.maxAngle;
 	}
 
 	static drawSpine(animal) {
@@ -44,8 +44,8 @@ export default class Animal {
 		}
 
 		Animal.drawOutline(this);
-		Animal.drawCircles(this);
-		Animal.drawSpine(this);
+		// Animal.drawCircles(this);
+		// Animal.drawSpine(this);
 
 		for (const segment of this.headSegment) {
 			if (segment.bodyparts instanceof Array) {
@@ -63,7 +63,7 @@ export default class Animal {
 		if (Point.magnitude(vectorToDestination) < speedInPixels)
 			return;
 
-		const direction = Point.multiply(Point.normalize(vectorToDestination), speedInPixels);
+		const direction = Point.scale(vectorToDestination, speedInPixels);
 
 		const restrictedDirection = this.headSegment.nextSegment instanceof Segment ?
 			Segment.restrictAngleOfRotation(this.headSegment, this.headSegment.nextSegment, direction) :

@@ -39,7 +39,7 @@ function animationLoop(animal, speedInPixels) {
 }
 
 window.setup = () => {
-	createCanvas(1600, 800);
+	/* createCanvas(1600, 800);
 
 	const segment = new Segment(new Point(width / 2, height / 2), 0, 20);
 	const leg = new LegDescriptor(
@@ -70,7 +70,7 @@ window.setup = () => {
 	}, 1000 / 60);
 }
 
-function test2() {
+function test2() { */
 	/* createCanvas(1600, 800);
 
 	const middle = new Point(width / 2, height / 2);
@@ -164,15 +164,16 @@ function test1() { */
 			new SegmentDescriptor(26, 29),
 			new SegmentDescriptor(29, 20),
 			new SegmentDescriptor(22, 30,
-				[new AntennaDescriptor(
-					[
-						new AntennaSegmentDescriptor(25, 10, 0),
-						new AntennaSegmentDescriptor(15, 8, 0),
-						new AntennaSegmentDescriptor(12, 6, -10)
-					],
-					90,
-					new Color(0, 190, 0)
-				)]
+				[
+					new LegDescriptor(
+						[
+							new LegSegmentDescriptor(22, 10, 0, 0),
+							new LegSegmentDescriptor(15, 8, 5, 145),
+							new LegSegmentDescriptor(12, 6, 0, 0)
+						],
+						new Color(0, 190, 0)
+					)
+				]
 			),
 			new SegmentDescriptor(33, 34),
 			new SegmentDescriptor(27, 36),
@@ -223,7 +224,7 @@ function test1() { */
 
 	const FPS = 60;
 	const speedInPixels = 4;
-	const animal = fish.create();
+	const animal = lizard.create();
 
 
 	background(20, 80, 20);
