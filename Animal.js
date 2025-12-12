@@ -9,6 +9,9 @@ export default class Animal {
 
 		this.headSegment = Segment.createAndLink(headPosition, descriptors);
 		this.bodyColor = bodyColor;
+
+		this.headSegment.maxAngle = Segment.MAXANGLE;
+		this.headSegment.minAngle = this.headSegment.maxAngle;
 	}
 
 	static drawSpine(animal) {
@@ -41,8 +44,8 @@ export default class Animal {
 		}
 
 		Animal.drawOutline(this);
-		// Animal.drawCircles(this);
-		// Animal.drawSpine(this);
+		Animal.drawCircles(this);
+		Animal.drawSpine(this);
 
 		for (const segment of this.headSegment) {
 			if (segment.bodyparts instanceof Array) {

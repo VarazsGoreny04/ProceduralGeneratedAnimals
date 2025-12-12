@@ -47,7 +47,7 @@ export class BodypartDescriptor {
 		this.color = color;
 	}
 
-	create(segment) { return null; }
+	create(segment) { throw "This function must be implemented in an inherited class!"; }
 }
 
 export class EyeDescriptor extends BodypartDescriptor {
@@ -111,7 +111,7 @@ export class AntennaSegmentDescriptor extends SegmentDescriptor {
 			Point.rotateDegree(new Point(prevOrigin.x - this.segmentDistance, prevOrigin.y), this.angle),
 			this.segmentDistance,
 			this.skinRadius,
-			undefined
+			null
 		);
 
 		if (this.bodypartDescriptors instanceof BodypartDescriptor)
@@ -125,10 +125,9 @@ export class LegDescriptor extends BodypartDescriptor {
 	constructor(legSegmentDescriptors, color, render = Bodypart.TOP) {
 		super(render, color);
 		this.segmentDescriptors = legSegmentDescriptors;
-		this.angle = angle;
 	}
 
-	create(segment) { return new Leg(segment, this.render, this.segmentDescriptors, this.angle, this.color); }
+	create(segment) { return new Leg(segment, this.render, this.segmentDescriptors, this.color); }
 }
 
 export class LegSegmentDescriptor extends SegmentDescriptor {
@@ -143,8 +142,11 @@ export class LegSegmentDescriptor extends SegmentDescriptor {
 			new Point(prevOrigin.x, prevOrigin.y + this.segmentDistance),
 			this.segmentDistance,
 			this.skinRadius,
-			undefined
+			null
 		);
+
+		segment.maxAngle = this.maxAngle;
+		segment.minAngle = this.minAngle;
 
 		if (this.bodypartDescriptors instanceof BodypartDescriptor)
 			segment.bodyparts = this.bodypartDescriptors.create(segment);

@@ -13,8 +13,20 @@ import {
 	LegDescriptor,
 	LegSegmentDescriptor
 } from './Descriptor.js';
+import Segment from './Segment.js';
+
+let stop = true;
+
+window.keyPressed = () => {
+	if (key === 'f') {
+		stop = !stop;
+	}
+}
 
 function animationLoop(animal, speedInPixels) {
+	if (stop)
+		return;
+
 	const currentMousePosition = Point.mouse();
 
 	if (Point.magnitude(Point.subtract(currentMousePosition, animal.headSegment.origin)) < speedInPixels)
@@ -27,7 +39,41 @@ function animationLoop(animal, speedInPixels) {
 }
 
 window.setup = () => {
-	/* const middle = new Point(width / 2, height / 2);
+	createCanvas(1600, 800);
+
+	const segment = new Segment(new Point(width / 2, height / 2), 0, 20);
+	const leg = new LegDescriptor(
+		[
+			new LegSegmentDescriptor(70, 10, -70, 70),
+			new LegSegmentDescriptor(70, 10, 20, 145),
+			new LegSegmentDescriptor(70, 10, 0, 0),
+		],
+		new Color(255, 0, 0, 100)
+	).create(segment);
+
+	segment.bodyparts = [leg];
+
+	setInterval(() => {
+		if (stop)
+			return;
+
+		const mouse = Point.mouse()// new Point(random(0, width), random(0, height));
+		if (leg.standsOn.x == mouse.x || leg.standsOn.y == mouse.y)
+			return;
+
+		background(20, 80, 20);
+		fill(255, 0, 0);
+		ellipse(segment.origin.x, segment.origin.y, 5, 5);
+		ellipse(mouse.x, mouse.y, 20, 20);
+		leg.standsOn = mouse;
+		leg.draw();
+	}, 1000 / 60);
+}
+
+function test2() {
+	/* createCanvas(1600, 800);
+
+	const middle = new Point(width / 2, height / 2);
 	const vector = new Point(1, 1);
 
 	fill(255, 255, 255);
@@ -39,7 +85,7 @@ window.setup = () => {
 	});
 }
 
-function test() { */
+function test1() { */
 	strokeCap(ROUND);
 	strokeJoin(ROUND);
 	stroke(0);
@@ -170,14 +216,17 @@ function test() { */
 			new SegmentDescriptor(30, 14),
 			new SegmentDescriptor(20, 8),
 			new SegmentDescriptor(15, 5),
-			new SegmentDescriptor(10, 2, [new TailFinDescriptor([20, 15, 10], new Color(0, 0, 140))])
+			new SegmentDescriptor(10, 2, [new TailFinDescriptor([10, 10, 10, 10, 10], new Color(0, 0, 140))])
 		],
 		new Color(20, 130, 255)
 	);
 
 	const FPS = 60;
-	const speedInPixels = 6;
+	const speedInPixels = 4;
 	const animal = fish.create();
 
+
+	background(20, 80, 20);
+	animal.draw();
 	setInterval(() => { animationLoop(animal, Math.floor((60 / FPS) * speedInPixels)); }, Math.floor(1000 / FPS));
 }

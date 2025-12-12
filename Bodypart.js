@@ -106,15 +106,11 @@ export class TailFin extends Bodypart {
 	constructor(segment, render, distances, color) {
 		super(segment, render, color);
 
-		let nextFinPart = new SegmentDescriptor(0, 1, undefined);
-		nextFinPart.maxAngle = 60;
-		nextFinPart.minAngle = -60;
+		let nextFinPart = new SegmentDescriptor(1, 1, undefined);
 
 		const descriptors = [nextFinPart];
 		for (const distance of distances) {
 			nextFinPart = new SegmentDescriptor(distance, 1, undefined);
-			nextFinPart.maxAngle = 60;
-			nextFinPart.minAngle = -60;
 
 			descriptors.push(nextFinPart);
 		}
@@ -133,7 +129,7 @@ export class TailFin extends Bodypart {
 
 		for (let index = points.length - 1; index > 0; --index) {
 			const topPoint = Point.normalRight(Point.subtract(points[index - 1], points[index]));
-			points.push(Point.add(points[index], Point.multiply(topPoint, (index / (points.length - 1)) * 10 * angle)));
+			points.push(Point.add(points[index], Point.multiply(topPoint, (index / (points.length - 1)) * 13 * angle)));
 		}
 
 		return points;
@@ -193,10 +189,53 @@ export class Leg extends Bodypart {
 	constructor(segment, render, descriptors, color) {
 		super(segment, render, color);
 
-		this.points = Segment.getPoints(Segment.createAndLink(new Point(0, 0), descriptors));
+		this.joinSegment = Segment.createAndLink(segment.origin, descriptors);
+
+		let counter = 0;
+		let end = null;
+		for (const nextSegment of this.joinSegment) {
+			++counter;
+			end = nextSegment;
+		}
+
+		if (counter < 2)
+			throw "A leg must have at least 2 segment discriptors!";
+
+		this.endSegment = end;
+		this.standsOn = this.endSegment.origin;
+	}
+
+	static twoWayKinematics(leg) {
+		const joinPoint = leg.joinSegment.origin;
+
+		leg.endSegment.origin = leg.standsOn;
+		Segment.pullPrev(leg.endSegment);
+
+		leg.joinSegment.origin = joinPoint;
+		Segment.pullNext(leg.joinSegment);
+	}
+
+	static break(leg) {
+		for (const segment of leg.joinSegment)
+			segment.origin = Point.subtract(Point.multiply(leg.segment.origin, 2), segment.origin);
 	}
 
 	draw() {
+		this.joinSegment.origin = this.segment.origin;
 
+		Leg.twoWayKinematics(this);
+
+		if (Point.magnitude(Point.subtract(this.standsOn, this.endSegment.origin)) > this.endSegment.distanceFromPrev) {
+			Leg.break(this);
+
+			for (let i = 0; i < 10; ++i)
+				Leg.twoWayKinematics(this);
+		}
+
+		this.standsOn = this.endSegment.origin;
+
+		fill(this.color.r, this.color.g, this.color.b);
+
+		bezierLine.drawLoop(Segment.getPoints(this.joinSegment));
 	}
 }

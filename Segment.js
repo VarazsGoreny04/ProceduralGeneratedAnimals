@@ -46,17 +46,30 @@ export default class Segment {
 		return result;
 	}
 
+	static pull(segment, segmentToPull, distanceBetween, segmentInFront = null) {
+		const fromSegmentToNext = Point.subtract(segmentToPull.origin, segment.origin);
+		let toJoinPoint = Point.multiply(Point.normalize(fromSegmentToNext), distanceBetween);
+
+		if (segmentInFront instanceof Segment)
+			toJoinPoint = Segment.restrictAngleOfRotation(segment, segmentInFront, toJoinPoint);
+
+		segmentToPull.origin = Point.add(segment.origin, toJoinPoint);
+		ellipse(segmentToPull.origin.x, segmentToPull.origin.y, 3, 3);
+	}
+
 	static pullNext(segment) {
 		if (segment.nextSegment instanceof Segment) {
-			const fromSegmentToNext = Point.subtract(segment.nextSegment.origin, segment.origin);
-			let toJoinPoint = Point.multiply(Point.normalize(fromSegmentToNext), segment.nextSegment.distanceFromPrev);
-
-			if (segment.prevSegment instanceof Segment)
-				toJoinPoint = Segment.restrictAngleOfRotation(segment, segment.prevSegment, toJoinPoint);
-
-			segment.nextSegment.origin = Point.add(segment.origin, toJoinPoint);
+			Segment.pull(segment, segment.nextSegment, segment.nextSegment.distanceFromPrev, segment.prevSegment);
 
 			Segment.pullNext(segment.nextSegment);
+		}
+	}
+
+	static pullPrev(segment) {
+		if (segment.prevSegment instanceof Segment) {
+			Segment.pull(segment, segment.prevSegment, segment.distanceFromPrev, segment.nextSegment);
+
+			Segment.pullPrev(segment.prevSegment);
 		}
 	}
 
@@ -107,6 +120,6 @@ export default class Segment {
 	static restrictAngleOfRotation(firstSegment, secondSegment, direction) {
 		const fromNextToSegment = Point.subtract(firstSegment.origin, secondSegment.origin);
 
-		return Point.restrictAngleOfRotation(fromNextToSegment, direction, secondSegment.maxAngle, secondSegment.minAngle);
+		return Point.restrictAngleOfRotation(fromNextToSegment, direction, firstSegment.maxAngle, firstSegment.minAngle);
 	}
 }
