@@ -43,6 +43,8 @@ export default class Segment {
 			current = next;
 		}
 
+		Segment.pullNext(result);
+
 		return result;
 	}
 

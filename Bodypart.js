@@ -201,6 +201,16 @@ class OneLeg {
 
 		this.endSegment = end;
 		this.standsOn = this.endSegment.origin;
+
+		this.range = Point.magnitude(Point.subtract(this.endSegment.origin, this.joinSegment.origin));
+	}
+
+	static getNewTarget(leg, frontVector, normalVector, stepTo) {
+		const toSide = Point.multiply(normalVector, stepTo.x);
+		const toFront = Point.multiply(frontVector, stepTo.y);
+		const direction = Point.add(toSide, toFront);
+
+		return Point.add(leg.joinSegment.origin, (Point.magnitude(direction) > leg.range ? Point.scale(direction, leg.range) : direction));
 	}
 
 	static twoWayKinematics(leg) {
@@ -218,11 +228,13 @@ class OneLeg {
 			segment.origin = Point.subtract(Point.multiply(origin, 2), segment.origin);
 	}
 
-	static draw(segment, leg, color) {
+	static draw(leg, color) {
 		OneLeg.twoWayKinematics(leg);
 
-		if (Point.magnitude(Point.subtract(leg.standsOn, leg.endSegment.origin)) > leg.endSegment.distanceFromPrev) {
-			OneLeg.break(segment.origin, leg);
+		const distanceFromTarget = Point.magnitude(Point.subtract(leg.standsOn, leg.endSegment.origin));
+
+		if (distanceFromTarget > leg.endSegment.distanceFromPrev) {
+			OneLeg.break(leg.joinSegment.origin, leg);
 
 			for (let i = 0; i < 5; ++i)
 				OneLeg.twoWayKinematics(leg);
@@ -235,24 +247,36 @@ class OneLeg {
 }
 
 export class Leg extends Bodypart {
-	constructor(segment, render, descriptors, color) {
+	constructor(segment, render, descriptors, stepTo, color) {
 		super(segment, render, color);
+
 		this.left = new OneLeg(segment.origin, descriptors);
 
 		const mirroredDiscriptors = [];
 		for (const discriptor of descriptors)
 			mirroredDiscriptors.push(LegSegmentDescriptor.mirror(discriptor));
-
 		this.right = new OneLeg(segment.origin, mirroredDiscriptors);
+
+		this.stepTo = stepTo;
+	}
+
+	static drawOne(segment, frontVector, normalVector, leg, color, stepTo) {
+		leg.joinSegment.origin = Point.add(segment.origin, Point.scale(normalVector, leg.joinSegment.distanceFromPrev));
+		const fromTarget = Point.magnitude(Point.subtract(leg.standsOn, leg.joinSegment.origin));
+
+		const bodyLegAngle = Math.abs(Point.angleOfVectors(frontVector, Point.subtract(leg.joinSegment.origin, leg.joinSegment.nextSegment.origin)));
+
+		if (fromTarget > leg.range || bodyLegAngle < 30)
+			leg.standsOn = OneLeg.getNewTarget(leg, frontVector, normalVector, stepTo);
+
+		OneLeg.draw(leg, color);
 	}
 
 	draw() {
 		const frontVector = Point.normalize(Segment.getFrontVector(this.segment));
 
-		this.left.joinSegment.origin = Point.add(this.segment.origin, Point.scale(Point.normalLeft(frontVector), this.left.joinSegment.distanceFromPrev));
-		OneLeg.draw(this.segment, this.left, this.color);
+		Leg.drawOne(this.segment, frontVector, Point.normalRight(frontVector), this.left, this.color, this.stepTo);
+		Leg.drawOne(this.segment, frontVector, Point.normalLeft(frontVector), this.right, this.color, this.stepTo);
 
-		this.right.joinSegment.origin = Point.add(this.segment.origin, Point.scale(Point.normalRight(frontVector), this.right.joinSegment.distanceFromPrev));
-		OneLeg.draw(this.segment, this.right, this.color);
 	}
 }
