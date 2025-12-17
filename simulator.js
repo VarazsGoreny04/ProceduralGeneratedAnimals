@@ -13,14 +13,24 @@ import {
 	LegDescriptor,
 	LegSegmentDescriptor
 } from './Descriptor.js';
-import Segment from './Segment.js';
 
+const width = 1600;
+const height = 800;
+
+const FPS = 60;
 let stop = true;
+let animals = null;
+let animal = null;
 
 window.keyPressed = () => {
-	if (key === 'f') {
+	if (key === 'f')
 		stop = !stop;
-	}
+	else if (key === '1')
+		changeAnimal(0);
+	else if (key === '2')
+		changeAnimal(1);
+	else if (key === '3')
+		changeAnimal(2);
 }
 
 function animationLoop(animal, speedInPixels) {
@@ -38,58 +48,14 @@ function animationLoop(animal, speedInPixels) {
 	animal.draw();
 }
 
+function changeAnimal(index) {
+	animal = animals[index].create();
+
+	background(20, 80, 20);
+	animal.draw();
+}
+
 window.setup = () => {
-	/* createCanvas(1600, 800);
-
-	const segment = new Segment(new Point(width / 2, height / 2), 0, 20);
-	const leg = new LegDescriptor(
-		[
-			new LegSegmentDescriptor(70, 10, -70, 70),
-			new LegSegmentDescriptor(70, 10, 20, 145),
-			new LegSegmentDescriptor(70, 10, 0, 0),
-		],
-		new Color(255, 0, 0, 100)
-	).create(segment);
-
-	segment.bodyparts = [leg];
-
-	setInterval(() => {
-		if (stop)
-			return;
-
-		const mouse = Point.mouse()// new Point(random(0, width), random(0, height));
-		if (leg.standsOn.x == mouse.x || leg.standsOn.y == mouse.y)
-			return;
-
-		background(20, 80, 20);
-		fill(255, 0, 0);
-		ellipse(segment.origin.x, segment.origin.y, 5, 5);
-		ellipse(mouse.x, mouse.y, 20, 20);
-		leg.standsOn = mouse;
-		leg.draw();
-	}, 1000 / 60);
-}
-
-function test2() { */
-	/* createCanvas(1600, 800);
-
-	const middle = new Point(width / 2, height / 2);
-	const vector = new Point(1, 1);
-
-	fill(255, 255, 255);
-	ellipse(middle.x, middle.y, 10, 10);
-
-	setInterval(() => {
-		const mouse = Point.subtract(Point.mouse(), middle);
-		console.log(Point.angleOfVectors(vector, mouse));
-	});
-}
-
-function test1() { */
-	strokeCap(ROUND);
-	strokeJoin(ROUND);
-	stroke(0);
-	createCanvas(1600, 800);
 
 	const snake = new AnimalDescriptor(
 		new Point(width / 2, height / 2),
@@ -157,7 +123,7 @@ function test1() { */
 		],
 		22,
 		new Color(190, 0, 0),
-		8
+		6
 	);
 	const lizard = new AnimalDescriptor(
 		new Point(width / 2, height / 2),
@@ -170,10 +136,10 @@ function test1() { */
 					new LegDescriptor(
 						[
 							new LegSegmentDescriptor(25, 10, 0, 0),
-							new LegSegmentDescriptor(18, 8, 5, 145),
+							new LegSegmentDescriptor(18, 8, 0, 145),
 							new LegSegmentDescriptor(15, 6, 0, 0)
 						],
-						new Point(18, 25),
+						new Point(22, 30),
 						new Color(0, 190, 0)
 					)
 				]
@@ -228,12 +194,16 @@ function test1() { */
 		],
 		20,
 		new Color(20, 130, 255),
-		10
+		8
 	);
 
-	const FPS = 60;
-	const animal = lizard.create();
+	animals = [snake, fish, lizard];
+	changeAnimal(0);
 
+	strokeCap(ROUND);
+	strokeJoin(ROUND);
+	stroke(0);
+	createCanvas(width, height);
 
 	background(20, 80, 20);
 	animal.draw();

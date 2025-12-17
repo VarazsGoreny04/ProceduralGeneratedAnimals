@@ -46,8 +46,8 @@ export default class Animal {
 		}
 
 		Animal.drawOutline(this);
-		// Animal.drawCircles(this);
-		// Animal.drawSpine(this);
+		Animal.drawCircles(this);
+		Animal.drawSpine(this);
 
 		for (const segment of this.headSegment) {
 			if (segment.bodyparts instanceof Array) {

@@ -1,13 +1,11 @@
 import Point from './Point.js';
 
 export default class Segment {
-	static MAXANGLE = 20;
-
 	constructor(origin, distanceFromPrev, skinRadius, bodyparts) {
 		this.origin = origin;
 		this.distanceFromPrev = distanceFromPrev;
 		this.skinRadius = skinRadius;
-		this.maxAngle = Math.min(Segment.MAXANGLE * this.distanceFromPrev / this.skinRadius, 60);
+		this.maxAngle = Math.min(20 * this.distanceFromPrev / this.skinRadius, 60);
 		this.minAngle = -this.maxAngle;
 
 		this.bodyparts = bodyparts;

@@ -277,6 +277,5 @@ export class Leg extends Bodypart {
 
 		Leg.drawOne(this.segment, frontVector, Point.normalRight(frontVector), this.left, this.color, this.stepTo);
 		Leg.drawOne(this.segment, frontVector, Point.normalLeft(frontVector), this.right, this.color, this.stepTo);
-
 	}
 }
