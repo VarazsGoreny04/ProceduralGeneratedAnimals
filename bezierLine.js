@@ -1,3 +1,9 @@
+import Point from "./Point";
+
+/**
+ * Draws a Bézier curve across the given points.
+ * @param {Point[]} points The points to go across.
+ */
 export function drawLine(points) {
 	beginShape();
 
@@ -9,6 +15,10 @@ export function drawLine(points) {
 	endShape();
 }
 
+/**
+ * Draws a Bézier curve across the given points and loops it back to the first point.
+ * @param {Point[]} points The points to go across.
+ */
 export function drawLoop(points) {
 	beginShape();
 
