@@ -1,4 +1,5 @@
 import * as bezierLine from './bezierLine.js';
+import { Bodypart } from './Bodypart.js';
 import Point from './Point.js';
 import Segment from './Segment.js';
 
@@ -18,45 +19,37 @@ export default class Animal {
 
 	static drawSpine(animal) {
 		fill(0, 0, 0, 0);
+
 		const points = [];
 		for (const segment of animal.headSegment)
 			points.push(segment.origin);
+
 		bezierLine.drawLine(points);
 	}
 
 	static drawCircles(animal) {
 		fill(0, 0, 0, 0);
+
 		for (const segment of animal.headSegment)
 			ellipse(segment.origin.x, segment.origin.y, segment.skinRadius * 2);
 	}
 
 	static drawOutline(animal) {
 		fill(animal.bodyColor.r, animal.bodyColor.g, animal.bodyColor.b, animal.bodyColor.a);
+
 		bezierLine.drawLoop(Segment.getPoints(animal.headSegment));
 	}
 
 	draw() {
-		for (const segment of this.headSegment) {
-			if (segment.bodyparts instanceof Array) {
-				for (const bodypart of segment.bodyparts) {
-					if (!bodypart.render)
-						bodypart.draw();
-				}
-			}
-		}
+		for (const segment of this.headSegment)
+			Segment.drawBodyparts(segment, Bodypart.BOTTOM);
 
 		Animal.drawOutline(this);
-		Animal.drawCircles(this);
-		Animal.drawSpine(this);
+		// Animal.drawCircles(this);
+		// Animal.drawSpine(this);
 
-		for (const segment of this.headSegment) {
-			if (segment.bodyparts instanceof Array) {
-				for (const bodypart of segment.bodyparts) {
-					if (bodypart.render)
-						bodypart.draw();
-				}
-			}
-		}
+		for (const segment of this.headSegment)
+			Segment.drawBodyparts(segment, Bodypart.TOP);
 	}
 
 	step(destination) {

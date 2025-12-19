@@ -90,12 +90,17 @@ export default class Segment {
 	static getPoints(headSegment) {
 		const roundNoseAngle = radians(45);
 
-		const front = Segment.getFrontVector(headSegment);
+		const frontVector = Segment.getFrontVector(headSegment);
 
-		const left = [Point.add(headSegment.origin, front), Point.add(headSegment.origin, Point.rotateRadian(front, roundNoseAngle))];
-		const right = [Point.add(headSegment.origin, Point.rotateRadian(front, -roundNoseAngle))];
+		const left = [
+			Point.add(headSegment.origin, frontVector),
+			Point.add(headSegment.origin, Point.rotateRadian(frontVector, roundNoseAngle))
+		];
+		const right = [
+			Point.add(headSegment.origin, Point.rotateRadian(frontVector, -roundNoseAngle))
+		];
 
-		let end;
+		let tailSegment;
 
 		for (const segment of headSegment) {
 			let front = Segment.getFrontVector(segment);
@@ -103,22 +108,31 @@ export default class Segment {
 			left.push(Point.add(segment.origin, Point.normalLeft(front)));
 			right.push(Point.add(segment.origin, Point.normalRight(front)));
 
-			end = segment;
+			tailSegment = segment;
 		}
 
-		const back = Point.reverse(Segment.getFrontVector(end));
+		const backVector = Point.reverse(Segment.getFrontVector(tailSegment));
 
-		left.push(Point.add(end.origin, Point.rotateRadian(back, -roundNoseAngle)));
-		right.push(Point.add(end.origin, Point.rotateRadian(back, roundNoseAngle)));
+		left.push(Point.add(tailSegment.origin, Point.rotateRadian(backVector, -roundNoseAngle)));
+		right.push(Point.add(tailSegment.origin, Point.rotateRadian(backVector, roundNoseAngle)));
 
-		left.push(Point.add(end.origin, back));
+		left.push(Point.add(tailSegment.origin, backVector));
 
 		return left.reverse().concat(right);
 	}
 
-	static restrictAngleOfRotation(firstSegment, secondSegment, direction) {
-		const fromNextToSegment = Point.subtract(firstSegment.origin, secondSegment.origin);
+	static drawBodyparts(segment, render) {
+		if (segment.bodyparts instanceof Array) {
+			for (const bodypart of segment.bodyparts) {
+				if (bodypart.render === render)
+					bodypart.draw();
+			}
+		}
+	}
 
-		return Point.restrictAngleOfRotation(fromNextToSegment, direction, firstSegment.maxAngle, firstSegment.minAngle);
+	static restrictAngleOfRotation(firstSegment, secondSegment, direction) {
+		const fromSecondToFirst = Point.subtract(firstSegment.origin, secondSegment.origin);
+
+		return Point.restrictAngleOfRotation(fromSecondToFirst, direction, firstSegment.maxAngle, firstSegment.minAngle);
 	}
 }

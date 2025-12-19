@@ -25,7 +25,7 @@ export default class Point {
 	}
 
 	static distance(a, b) {
-		return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+		return Point.magnitude(Point.subtract(a, b));
 	}
 
 	static normalize(v) {
@@ -49,9 +49,6 @@ export default class Point {
 	}
 
 	static rotateRadian(v, radian) {
-		if (Math.abs(radian) < 1e-6)
-			return v;
-
 		const sinR = sin(radian);
 		const cosR = cos(radian);
 
@@ -116,12 +113,12 @@ export default class Point {
 	}
 
 	static restrictAngleOfRotation(baseVector, directionVector, maxAngle, minAngle) {
-		const angle = Point.angleOfVectors(baseVector, directionVector);
+		const angleBetween = Point.angleOfVectors(baseVector, directionVector);
 
-		if (minAngle < angle && angle < maxAngle)
+		if (minAngle < angleBetween && angleBetween < maxAngle)
 			return directionVector;
 
-		const toRotate = (minAngle < angle ? maxAngle : minAngle) - angle;
+		const toRotate = (minAngle < angleBetween ? maxAngle : minAngle) - angleBetween;
 
 		return Point.rotateDegree(directionVector, toRotate);
 	}

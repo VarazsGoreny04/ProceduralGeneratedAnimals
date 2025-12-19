@@ -55,6 +55,7 @@ export class BodypartDescriptor {
 export class EyeDescriptor extends BodypartDescriptor {
 	constructor(degreeToFront, distanceToOrigin, radius, color, render = Bodypart.TOP) {
 		super(render, color);
+
 		this.degreeToFront = Math.abs(degreeToFront);
 		this.distanceToOrigin = Math.abs(distanceToOrigin);
 		this.radius = Math.abs(radius);
@@ -66,6 +67,7 @@ export class EyeDescriptor extends BodypartDescriptor {
 export class SideFinDescriptor extends BodypartDescriptor {
 	constructor(length, width, angle, color, render = Bodypart.BOTTOM) {
 		super(render, color);
+
 		this.length = Math.abs(length);
 		this.width = Math.abs(width);
 		this.angle = angle;
@@ -77,6 +79,7 @@ export class SideFinDescriptor extends BodypartDescriptor {
 export class BackFinDescriptor extends BodypartDescriptor {
 	constructor(lengthInSegments, color, render = Bodypart.TOP) {
 		super(render, color);
+
 		this.lengthInSegments = lengthInSegments;
 	}
 
@@ -86,6 +89,7 @@ export class BackFinDescriptor extends BodypartDescriptor {
 export class TailFinDescriptor extends BodypartDescriptor {
 	constructor(segmentDescriptors, color, render = Bodypart.BOTTOM) {
 		super(render, color);
+
 		this.segmentDescriptors = segmentDescriptors;
 	}
 
@@ -95,6 +99,7 @@ export class TailFinDescriptor extends BodypartDescriptor {
 export class AntennaDescriptor extends BodypartDescriptor {
 	constructor(antennaSegmentDescriptors, angle, color, render = Bodypart.TOP) {
 		super(render, color);
+
 		this.segmentDescriptors = antennaSegmentDescriptors;
 		this.angle = angle;
 	}
@@ -103,8 +108,9 @@ export class AntennaDescriptor extends BodypartDescriptor {
 }
 
 export class AntennaSegmentDescriptor extends SegmentDescriptor {
-	constructor(segmentDistance, skinRadius, angle, bodypartDescriptor = null) {
-		super(segmentDistance, skinRadius, bodypartDescriptor);
+	constructor(segmentDistance, skinRadius, angle) {
+		super(segmentDistance, skinRadius);
+
 		this.angle = angle;
 	}
 
@@ -116,9 +122,6 @@ export class AntennaSegmentDescriptor extends SegmentDescriptor {
 			null
 		);
 
-		if (this.bodypartDescriptors instanceof BodypartDescriptor)
-			segment.bodyparts = this.bodypartDescriptors.create(segment);
-
 		return segment;
 	}
 }
@@ -126,6 +129,7 @@ export class AntennaSegmentDescriptor extends SegmentDescriptor {
 export class LegDescriptor extends BodypartDescriptor {
 	constructor(legSegmentDescriptors, stepTo, color, render = Bodypart.BOTTOM) {
 		super(render, color);
+
 		this.segmentDescriptors = legSegmentDescriptors;
 		this.stepTo = stepTo;
 	}
@@ -134,8 +138,8 @@ export class LegDescriptor extends BodypartDescriptor {
 }
 
 export class LegSegmentDescriptor extends SegmentDescriptor {
-	constructor(segmentDistance, skinRadius, minAngle, maxAngle, bodypartDescriptor = null) {
-		super(segmentDistance, skinRadius, bodypartDescriptor);
+	constructor(segmentDistance, skinRadius, minAngle, maxAngle, bodypartDescriptors = null) {
+		super(segmentDistance, skinRadius, bodypartDescriptors);
 
 		this.minAngle = minAngle;
 		this.maxAngle = maxAngle;
@@ -153,7 +157,7 @@ export class LegSegmentDescriptor extends SegmentDescriptor {
 			discriptor.skinRadius,
 			-discriptor.maxAngle,
 			-discriptor.minAngle,
-			discriptor.bodypartDescriptor
+			discriptor.bodypartDescriptors
 		);
 	}
 
@@ -168,8 +172,12 @@ export class LegSegmentDescriptor extends SegmentDescriptor {
 		segment.maxAngle = this.maxAngle;
 		segment.minAngle = this.minAngle;
 
-		if (this.bodypartDescriptors instanceof BodypartDescriptor)
-			segment.bodyparts = this.bodypartDescriptors.create(segment);
+		if (this.bodypartDescriptors instanceof Array) {
+			segment.bodyparts = [];
+
+			for (const bodypartDescriptor of this.bodypartDescriptors)
+				segment.bodyparts.push(bodypartDescriptor.create(segment));
+		}
 
 		return segment;
 	}

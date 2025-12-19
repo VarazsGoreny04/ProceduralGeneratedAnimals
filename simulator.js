@@ -25,12 +25,11 @@ let animal = null;
 window.keyPressed = () => {
 	if (key === 'f')
 		stop = !stop;
-	else if (key === '1')
-		changeAnimal(0);
-	else if (key === '2')
-		changeAnimal(1);
-	else if (key === '3')
-		changeAnimal(2);
+	else if ('0' <= key && key <= '9') {
+		try {
+			changeAnimal(key - '0');
+		} catch (error) { }
+	}
 }
 
 function animationLoop(animal, speedInPixels) {
@@ -39,7 +38,7 @@ function animationLoop(animal, speedInPixels) {
 
 	const currentMousePosition = Point.mouse();
 
-	if (Point.magnitude(Point.subtract(currentMousePosition, animal.headSegment.origin)) < speedInPixels)
+	if (Point.distance(currentMousePosition, animal.headSegment.origin) < speedInPixels)
 		return;
 
 	background(20, 80, 20);
@@ -128,37 +127,84 @@ window.setup = () => {
 	const lizard = new AnimalDescriptor(
 		new Point(width / 2, height / 2),
 		[
-			new SegmentDescriptor(0, 26, [new EyeDescriptor(115, 22, 10, new Color(0, 0, 0))]),
+			new SegmentDescriptor(0, 26,
+				[
+					new EyeDescriptor(115, 22, 10, new Color(255, 255, 255)),
+					new EyeDescriptor(112, 21.5, 6, new Color(0, 0, 0))
+				]
+			),
 			new SegmentDescriptor(26, 29),
 			new SegmentDescriptor(29, 20),
 			new SegmentDescriptor(22, 30,
-				[
-					new LegDescriptor(
-						[
-							new LegSegmentDescriptor(25, 10, 0, 0),
-							new LegSegmentDescriptor(18, 8, 0, 145),
-							new LegSegmentDescriptor(15, 6, 0, 0)
-						],
-						new Point(22, 30),
-						new Color(0, 190, 0)
-					)
-				]
+				[new LegDescriptor(
+					[
+						new LegSegmentDescriptor(25, 10, 0, 0),
+						new LegSegmentDescriptor(18, 8, 0, 145),
+						new LegSegmentDescriptor(15, 6, 0, 0,
+							[
+								new AntennaDescriptor(
+									[
+										new AntennaSegmentDescriptor(5, 2, 0),
+										new AntennaSegmentDescriptor(7, 1, 0),
+										new AntennaSegmentDescriptor(2, 2, 0)
+									],
+									130,
+									new Color(0, 190, 0),
+									Bodypart.BOTTOM
+								),
+								new AntennaDescriptor(
+									[
+										new AntennaSegmentDescriptor(5, 2, 0),
+										new AntennaSegmentDescriptor(7, 1, 0),
+										new AntennaSegmentDescriptor(2, 2, 0)
+									],
+									180,
+									new Color(0, 190, 0),
+									Bodypart.BOTTOM
+								)
+							]
+						)
+					],
+					new Point(22, 30),
+					new Color(0, 190, 0)
+				)]
 			),
 			new SegmentDescriptor(33, 34),
 			new SegmentDescriptor(27, 36),
 			new SegmentDescriptor(32, 32),
 			new SegmentDescriptor(25, 25,
-				[
-					new LegDescriptor(
-						[
-							new LegSegmentDescriptor(28, 13, 0, 0),
-							new LegSegmentDescriptor(21, 8, -145, -5),
-							new LegSegmentDescriptor(18, 6, 0, 0)
-						],
-						new Point(18, 0),
-						new Color(0, 190, 0)
-					)
-				]
+				[new LegDescriptor(
+					[
+						new LegSegmentDescriptor(28, 13, 0, 0),
+						new LegSegmentDescriptor(21, 8, -145, -5),
+						new LegSegmentDescriptor(18, 6, 0, 0,
+							[
+								new AntennaDescriptor(
+									[
+										new AntennaSegmentDescriptor(5, 3, 0),
+										new AntennaSegmentDescriptor(9, 1, 0),
+										new AntennaSegmentDescriptor(3, 3, 0)
+									],
+									140,
+									new Color(0, 190, 0),
+									Bodypart.BOTTOM
+								),
+								new AntennaDescriptor(
+									[
+										new AntennaSegmentDescriptor(5, 3, 0),
+										new AntennaSegmentDescriptor(9, 1, 0),
+										new AntennaSegmentDescriptor(3, 3, 0)
+									],
+									180,
+									new Color(0, 190, 0),
+									Bodypart.BOTTOM
+								)
+							]
+						)
+					],
+					new Point(18, 0),
+					new Color(0, 190, 0)
+				)]
 			),
 			new SegmentDescriptor(30, 14),
 			new SegmentDescriptor(25, 8),
