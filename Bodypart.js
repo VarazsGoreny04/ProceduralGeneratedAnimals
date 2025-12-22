@@ -1,30 +1,52 @@
 import * as bezierLine from './bezierLine.js';
-import { LegSegmentDescriptor, SegmentDescriptor } from './Descriptor.js';
+import Color from './Color.js';
+import { AntennaSegmentDescriptor, LegSegmentDescriptor, SegmentDescriptor } from './Descriptor.js';
 import Point from './Point.js';
 import Segment from './Segment.js';
 
+/** Describes a bodypart of a creature. */
 export class Bodypart {
+	/** Render on top. */
 	static TOP = true;
+	/** Render on bottom. */
 	static BOTTOM = false;
 
+	/**
+	 * Creates a Bodypart object.
+	 * @param {Segment} segment The parent segment.
+	 * @param {boolean} render Where to render.
+	 * @param {Color} color Color of the bodypart.
+	 */
 	constructor(segment, render, color) {
 		this.segment = segment;
 		this.render = render;
 		this.color = color;
 	}
 
+	/** Draws this bodypart instance. */
 	draw() { }
 }
 
+/** Describes one pair of eyes of a creature. */
 export class Eye extends Bodypart {
-	constructor(segment, render, degreeToFront, distanceToOrigin, radius, color) {
+	/**
+	 * Creates an Eye object.
+	 * @param {Segment} segment The parent segment.
+	 * @param {boolean} render Where to render.
+	 * @param {number} angleToFront The angle of the eye from the front vector of the segment.
+	 * @param {number} distanceToOrigin The distance of the eye from the center of the segment.
+	 * @param {number} radius Radius of the eye.
+	 * @param {Color} color Color of the eye.
+	 */
+	constructor(segment, render, angleToFront, distanceToOrigin, radius, color) {
 		super(segment, render, color);
 
-		this.radianToFront = radians(degreeToFront);
+		this.radianToFront = radians(angleToFront);
 		this.distanceToOrigin = distanceToOrigin;
 		this.radius = radius;
 	}
 
+	/** Draws this eye instance. */
 	draw() {
 		fill(this.color.r, this.color.g, this.color.b, this.color.a);
 
@@ -38,6 +60,7 @@ export class Eye extends Bodypart {
 	}
 }
 
+/** Describes a pair of fins of a creature. */
 export class SideFin extends Bodypart {
 	constructor(segment, render, length, width, angle, color) {
 		super(segment, render, color);
@@ -47,8 +70,15 @@ export class SideFin extends Bodypart {
 		this.angle = angle;
 	}
 
-	static drawEllipseByAngle(x, y, angle, width, height) {
-		translate(x, y);
+	/**
+	 * Draws an ellipse.
+	 * @param {Point} position The position of the ellipse.
+	 * @param {number} angle The angle of the ellipse.
+	 * @param {number} width The width of the ellipse.
+	 * @param {number} height The height of the ellipse.
+	 */
+	static drawEllipseByOrientation(position, angle, width, height) {
+		translate(position.x, position.y);
 		rotate(radians(angle));
 
 		ellipse(0, -(height / 2), width, height);
@@ -56,6 +86,7 @@ export class SideFin extends Bodypart {
 		resetMatrix();
 	}
 
+	/** Draws this fin instance. */
 	draw() {
 		fill(this.color.r, this.color.g, this.color.b, this.color.a);
 
@@ -63,14 +94,22 @@ export class SideFin extends Bodypart {
 		const frontAngle = Point.angleOfVector(Point.normalRight(front));
 
 		const originOne = Point.add(this.segment.origin, Point.normalLeft(front));
-		SideFin.drawEllipseByAngle(originOne.x, originOne.y, frontAngle - this.angle, this.width, this.length);
+		SideFin.drawEllipseByOrientation(originOne, frontAngle - this.angle, this.width, this.length);
 
 		const originTwo = Point.add(this.segment.origin, Point.normalRight(front));
-		SideFin.drawEllipseByAngle(originTwo.x, originTwo.y, frontAngle + this.angle, this.width, this.length);
+		SideFin.drawEllipseByOrientation(originTwo, frontAngle + this.angle, this.width, this.length);
 	}
 }
 
+/** Describes the back fin of a creature. */
 export class BackFin extends Bodypart {
+	/**
+	 * Creates a BackFin object.
+	 * @param {Segment} segment The parent segment.
+	 * @param {boolean} render Where to render.
+	 * @param {number} lengthInSegments The number of segments the fin will go through.
+	 * @param {Color} color Color of the bodypart.
+	 */
 	constructor(segment, render, lengthInSegments, color) {
 		super(segment, render, color);
 
@@ -80,6 +119,11 @@ export class BackFin extends Bodypart {
 		this.lengthInSegments = lengthInSegments;
 	}
 
+	/**
+	 * Calculates the outline points of the fin.
+	 * @param {BackFin} fin The fin to calculate with.
+	 * @returns The calculated points.
+	 */
 	static getPoints(fin) {
 		const points = [];
 
@@ -102,6 +146,7 @@ export class BackFin extends Bodypart {
 		return points;
 	}
 
+	/** Draws this fin instance. */
 	draw() {
 		fill(this.color.r, this.color.g, this.color.b, this.color.a);
 
@@ -109,7 +154,15 @@ export class BackFin extends Bodypart {
 	}
 }
 
+/** Describes the tail fin of a creature. */
 export class TailFin extends Bodypart {
+	/**
+	 * Creates a TailFin object.
+	 * @param {Segment} segment The parent segment.
+	 * @param {boolean} render Where to render.
+	 * @param {number} distances 
+	 * @param {Color} color Color of the bodypart.
+	 */
 	constructor(segment, render, distances, color) {
 		super(segment, render, color);
 
@@ -123,6 +176,11 @@ export class TailFin extends Bodypart {
 		this.headJoint = Segment.createAndLink(segment.origin, descriptors);
 	}
 
+	/**
+	 * Calculates the outline points of the fin.
+	 * @param {BackFin} fin The fin to calculate with.
+	 * @returns The calculated points.
+	 */
 	static getPoints(fin) {
 		const points = [];
 
@@ -140,6 +198,7 @@ export class TailFin extends Bodypart {
 		return points;
 	}
 
+	/** Draws this fin instance. */
 	draw() {
 		this.headJoint.origin = this.segment.origin;
 		Segment.pullNext(this.headJoint);
@@ -150,7 +209,16 @@ export class TailFin extends Bodypart {
 	}
 }
 
+/** Describes a pair of antennas of a creature. */
 export class Antenna extends Bodypart {
+	/**
+	 * Creates a TailFin object.
+	 * @param {Segment} segment The parent segment.
+	 * @param {boolean} render Where to render.
+	 * @param {AntennaSegmentDescriptor} descriptors The descriptors of the segments of the antenna.
+	 * @param {number} angle The angle of the antennas.
+	 * @param {Color} color Color of the bodypart.
+	 */
 	constructor(segment, render, descriptors, angle, color) {
 		super(segment, render, color);
 
@@ -168,8 +236,14 @@ export class Antenna extends Bodypart {
 		this.angle = angle;
 	}
 
-	static drawLoopByOrientation(x, y, angle, points) {
-		translate(x, y);
+	/**
+	 * Draws a loop.
+	 * @param {Point} position The position of the loop.
+	 * @param {number} angle The angle of the loop.
+	 * @param {Point[]} points The points of the loop.
+	 */
+	static drawLoopByOrientation(position, angle, points) {
+		translate(position.x, position.y);
 		rotate(radians(angle));
 
 		bezierLine.drawLoop(points);
@@ -177,17 +251,18 @@ export class Antenna extends Bodypart {
 		resetMatrix();
 	}
 
+	/** Draws this antenna instance. */
 	draw() {
 		fill(this.color.r, this.color.g, this.color.b, this.color.a);
 
 		const bodyAngle = Point.angleOfVector(Point.reverse(Segment.getFrontVector(this.segment)));
 
 		if (this.pointsMirrored instanceof Array) {
-			Antenna.drawLoopByOrientation(this.segment.origin.x, this.segment.origin.y, bodyAngle + this.angle, this.points);
-			Antenna.drawLoopByOrientation(this.segment.origin.x, this.segment.origin.y, bodyAngle - this.angle, this.pointsMirrored);
+			Antenna.drawLoopByOrientation(this.segment.origin, bodyAngle + this.angle, this.points);
+			Antenna.drawLoopByOrientation(this.segment.origin, bodyAngle - this.angle, this.pointsMirrored);
 		}
 		else
-			Antenna.drawLoopByOrientation(this.segment.origin.x, this.segment.origin.y, bodyAngle, this.points);
+			Antenna.drawLoopByOrientation(this.segment.origin, bodyAngle, this.points);
 	}
 }
 

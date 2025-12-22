@@ -1,4 +1,4 @@
-/** Decribes a color value. */
+/** Describes a color value. */
 export default class Color {
 	/**
 	 * Creates a Color object.

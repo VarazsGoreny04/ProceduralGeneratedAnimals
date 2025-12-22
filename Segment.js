@@ -2,7 +2,7 @@ import { Bodypart } from './Bodypart.js';
 import { SegmentDescriptor } from './Descriptor.js';
 import Point from './Point.js';
 
-/** Decribes a segment of a creature. */
+/** Describes a segment of a creature. */
 export default class Segment {
 	/**
 	 * Creates a Segment object.
