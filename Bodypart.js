@@ -266,7 +266,13 @@ export class Antenna extends Bodypart {
 	}
 }
 
+/** Describes one leg of a creature. */
 class OneLeg {
+	/**
+	 * Creates a OneLeg object.
+	 * @param {Point} origin The origin of the parent segment.
+	 * @param {LegSegmentDescriptor[]} descriptors The descriptors of the segments of the leg.
+	 */
 	constructor(origin, descriptors) {
 		this.headSegment = Segment.createAndLink(origin, descriptors);
 
@@ -286,6 +292,14 @@ class OneLeg {
 		this.range = Point.distance(this.tailSegment.origin, this.headSegment.origin);
 	}
 
+	/**
+	 * 
+	 * @param {OneLeg} leg The leg to get a new target for.
+	 * @param {Point} frontVector The normalized front vector of the parent segment.
+	 * @param {Point} normalVector The normalized normal vector of the parent segment pointing torwards the legs direction.
+	 * @param {Point} stepTo 
+	 * @returns 
+	 */
 	static getNewTarget(leg, frontVector, normalVector, stepTo) {
 		const toSide = Point.multiply(normalVector, stepTo.x);
 		const toFront = Point.multiply(frontVector, stepTo.y);
@@ -294,6 +308,10 @@ class OneLeg {
 		return Point.add(leg.headSegment.origin, (Point.magnitude(direction) > leg.range ? Point.scale(direction, leg.range) : direction));
 	}
 
+	/**
+	 * Performs two way inverse kinematics on the given leg.
+	 * @param {OneLeg} leg The given leg.
+	 */
 	static twoWayKinematics(leg) {
 		const joinPoint = leg.headSegment.origin;
 
@@ -304,11 +322,21 @@ class OneLeg {
 		Segment.pullNext(leg.headSegment);
 	}
 
+	/**
+	 * Mirrors the position of the points of the leg around a certain point.
+	 * @param {Point} origin The point to mirror around.
+	 * @param {OneLeg} leg The given leg.
+	 */
 	static break(origin, leg) {
 		for (const segment of leg.headSegment)
 			segment.origin = Point.subtract(Point.multiply(origin, 2), segment.origin);
 	}
 
+	/**
+	 * Draws a OneLeg instance.
+	 * @param {OneLeg} leg The leg to draw.
+	 * @param {Color} color The color of the leg.
+	 */
 	static draw(leg, color) {
 		OneLeg.twoWayKinematics(leg);
 
@@ -333,7 +361,16 @@ class OneLeg {
 	}
 }
 
+/** Describes one pair of legs of a creature. */
 export class Leg extends Bodypart {
+	/**
+	 * 
+	 * @param {Segment} segment The parent segment.
+	 * @param {boolean} render Where to render.
+	 * @param {LegSegmentDescriptor[]} descriptors The descriptors of the segments of one leg.
+	 * @param {Point} stepTo Point to step on.
+	 * @param {Color} color The color of the legs.
+	 */
 	constructor(segment, render, descriptors, stepTo, color) {
 		super(segment, render, color);
 
@@ -347,6 +384,15 @@ export class Leg extends Bodypart {
 		this.stepTo = stepTo;
 	}
 
+	/**
+	 * Draws one leg.
+	 * @param {Segment} segment The parent segment.
+	 * @param {Point} frontVector The normalized front vector of the parent segment.
+	 * @param {Point} normalVector The normalized normal vector of the parent segment pointing torwards the legs direction.
+	 * @param {OneLeg} leg The leg to draw.
+	 * @param {Color} color The color of the leg.
+	 * @param {Point} stepTo Point to step on.
+	 */
 	static drawOne(segment, frontVector, normalVector, leg, color, stepTo) {
 		leg.headSegment.origin = Point.add(segment.origin, Point.scale(normalVector, leg.headSegment.distanceFromPrev));
 
@@ -359,6 +405,7 @@ export class Leg extends Bodypart {
 		OneLeg.draw(leg, color);
 	}
 
+	/** Draws this leg instance. */
 	draw() {
 		const normalizedFrontVector = Point.normalize(Segment.getFrontVector(this.segment));
 
