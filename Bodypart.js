@@ -1,8 +1,8 @@
 import * as bezierLine from './bezierLine.js';
 import Color from './Color.js';
-import { AntennaSegmentDescriptor, LegSegmentDescriptor, SegmentDescriptor } from './Descriptor.js';
 import Point from './Point.js';
 import Segment from './Segment.js';
+import { AntennaSegmentDescriptor, LegSegmentDescriptor, SegmentDescriptor } from './Descriptor.js';
 
 /** Describes a bodypart of a creature. */
 export class Bodypart {
@@ -160,14 +160,14 @@ export class TailFin extends Bodypart {
 	 * Creates a TailFin object.
 	 * @param {Segment} segment The parent segment.
 	 * @param {boolean} render Where to render.
-	 * @param {number} distances 
+	 * @param {number[]} distances The distances between the segments of the fin.
 	 * @param {Color} color Color of the bodypart.
 	 */
 	constructor(segment, render, distances, color) {
 		super(segment, render, color);
 
 		if (distances.length < 2)
-			throw "A tailfin must have at least 2 distance discriptors!";
+			throw "A tailfin must have at least 2 distance descriptors!";
 
 		const descriptors = [new SegmentDescriptor(1, 1, undefined)];
 		for (const distance of distances)
@@ -284,7 +284,7 @@ class OneLeg {
 		}
 
 		if (counter < 2)
-			throw "A leg must have at least 2 segment discriptors!";
+			throw "A leg must have at least 2 segment descriptors!";
 
 		this.tailSegment = tail;
 		this.standsOn = this.tailSegment.origin;
@@ -293,16 +293,16 @@ class OneLeg {
 	}
 
 	/**
-	 * 
+	 * Gets a new step location for the given leg.
 	 * @param {OneLeg} leg The leg to get a new target for.
 	 * @param {Point} frontVector The normalized front vector of the parent segment.
 	 * @param {Point} normalVector The normalized normal vector of the parent segment pointing torwards the legs direction.
-	 * @param {Point} stepTo 
-	 * @returns 
+	 * @param {Point} stepStyler The direction vector to calculate the location of the next step.
+	 * @returns The new location to step to.
 	 */
-	static getNewTarget(leg, frontVector, normalVector, stepTo) {
-		const toSide = Point.multiply(normalVector, stepTo.x);
-		const toFront = Point.multiply(frontVector, stepTo.y);
+	static getNewTarget(leg, frontVector, normalVector, stepStyler) {
+		const toSide = Point.multiply(normalVector, stepStyler.x);
+		const toFront = Point.multiply(frontVector, stepStyler.y);
 		const direction = Point.add(toSide, toFront);
 
 		return Point.add(leg.headSegment.origin, (Point.magnitude(direction) > leg.range ? Point.scale(direction, leg.range) : direction));
@@ -364,7 +364,7 @@ class OneLeg {
 /** Describes one pair of legs of a creature. */
 export class Leg extends Bodypart {
 	/**
-	 * 
+	 * Creates a Leg object.
 	 * @param {Segment} segment The parent segment.
 	 * @param {boolean} render Where to render.
 	 * @param {LegSegmentDescriptor[]} descriptors The descriptors of the segments of one leg.
@@ -376,10 +376,10 @@ export class Leg extends Bodypart {
 
 		this.left = new OneLeg(segment.origin, descriptors);
 
-		const mirroredDiscriptors = [];
-		for (const discriptor of descriptors)
-			mirroredDiscriptors.push(LegSegmentDescriptor.mirror(discriptor));
-		this.right = new OneLeg(segment.origin, mirroredDiscriptors);
+		const mirroreddescriptors = [];
+		for (const descriptor of descriptors)
+			mirroreddescriptors.push(LegSegmentDescriptor.mirror(descriptor));
+		this.right = new OneLeg(segment.origin, mirroreddescriptors);
 
 		this.stepTo = stepTo;
 	}
