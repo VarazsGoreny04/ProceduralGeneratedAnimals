@@ -1,4 +1,4 @@
-import Point from "./Point";
+import Point from "./Point.js";
 
 /**
  * Draws a Bézier curve across the given points.

@@ -1,5 +1,5 @@
-import Point from './Point.js';
 import Color from './Color.js';
+import Point from './Point.js';
 import { Bodypart } from './Bodypart.js';
 import {
 	AnimalDescriptor,
@@ -127,12 +127,7 @@ window.setup = () => {
 	const lizard = new AnimalDescriptor(
 		new Point(width / 2, height / 2),
 		[
-			new SegmentDescriptor(0, 26,
-				[
-					new EyeDescriptor(115, 22, 10, new Color(255, 255, 255)),
-					new EyeDescriptor(112, 21.5, 6, new Color(0, 0, 0))
-				]
-			),
+			new SegmentDescriptor(0, 26, [new EyeDescriptor(115, 22, 10, new Color(0, 0, 0))]),
 			new SegmentDescriptor(26, 29),
 			new SegmentDescriptor(29, 20),
 			new SegmentDescriptor(22, 30,
@@ -144,9 +139,8 @@ window.setup = () => {
 							[
 								new AntennaDescriptor(
 									[
-										new AntennaSegmentDescriptor(5, 2, 0),
-										new AntennaSegmentDescriptor(7, 1, 0),
-										new AntennaSegmentDescriptor(2, 2, 0)
+										new AntennaSegmentDescriptor(5, 3, 0),
+										new AntennaSegmentDescriptor(7, 2, 0)
 									],
 									130,
 									new Color(0, 190, 0),
@@ -154,9 +148,8 @@ window.setup = () => {
 								),
 								new AntennaDescriptor(
 									[
-										new AntennaSegmentDescriptor(5, 2, 0),
-										new AntennaSegmentDescriptor(7, 1, 0),
-										new AntennaSegmentDescriptor(2, 2, 0)
+										new AntennaSegmentDescriptor(5, 3, 0),
+										new AntennaSegmentDescriptor(7, 2, 0),
 									],
 									180,
 									new Color(0, 190, 0),
@@ -182,8 +175,7 @@ window.setup = () => {
 								new AntennaDescriptor(
 									[
 										new AntennaSegmentDescriptor(5, 3, 0),
-										new AntennaSegmentDescriptor(9, 1, 0),
-										new AntennaSegmentDescriptor(3, 3, 0)
+										new AntennaSegmentDescriptor(10, 2, 0)
 									],
 									140,
 									new Color(0, 190, 0),
@@ -192,8 +184,7 @@ window.setup = () => {
 								new AntennaDescriptor(
 									[
 										new AntennaSegmentDescriptor(5, 3, 0),
-										new AntennaSegmentDescriptor(9, 1, 0),
-										new AntennaSegmentDescriptor(3, 3, 0)
+										new AntennaSegmentDescriptor(9, 2, 0)
 									],
 									180,
 									new Color(0, 190, 0),

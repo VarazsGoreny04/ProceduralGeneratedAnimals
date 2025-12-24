@@ -2,7 +2,11 @@ import * as bezierLine from './bezierLine.js';
 import Color from './Color.js';
 import Point from './Point.js';
 import Segment from './Segment.js';
-import { AntennaSegmentDescriptor, LegSegmentDescriptor, SegmentDescriptor } from './Descriptor.js';
+import {
+	AntennaSegmentDescriptor,
+	LegSegmentDescriptor,
+	SegmentDescriptor
+} from './Descriptor.js';
 
 /** Describes a bodypart of a creature. */
 export class Bodypart {
