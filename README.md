@@ -4,6 +4,7 @@ The library also provides an example HTML document named ***index.html*** and an
 - Snake
 - Fish
 - Lizard
+
 The user can switch between the 3 animals using the number keys. Each key corresponds to a position in the ***animals*** array where the program stores its animals,
 so it is possible to add more custom animals.<br><br>
 
