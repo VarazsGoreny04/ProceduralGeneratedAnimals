@@ -18,7 +18,7 @@ const width = 1600;
 const height = 800;
 
 const FPS = 60;
-let stop = true;
+let stop = false;
 let animals = null;
 let animal = null;
 
