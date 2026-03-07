@@ -9,3 +9,29 @@ body {
 canvas {
   display: block;
 }
+
+button {
+  font-size: 1.2rem;
+  margin: 0.1rem 0.2rem 0.1rem 0.2rem;
+  padding: 0.6rem 0.6rem 0.6rem 0.6rem;
+  border-radius: 4rem;
+  background-color: #232323;
+  color: wheat;
+}
+
+.container {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.controls {
+  position: absolute;
+  width: 100%;
+}
+
+.box {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-evenly;
+}

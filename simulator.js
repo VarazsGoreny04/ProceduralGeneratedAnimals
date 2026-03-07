@@ -14,9 +14,6 @@ import {
 	LegSegmentDescriptor
 } from './Descriptor.js';
 
-const width = 1600;
-const height = 800;
-
 const FPS = 60;
 let stop = false;
 let animals = null;
@@ -24,7 +21,7 @@ let animal = null;
 
 window.keyPressed = () => {
 	if (key === 'f')
-		stop = !stop;
+		pause();
 	else if ('0' <= key && key <= '9') {
 		try {
 			changeAnimal(key - '0');
@@ -47,6 +44,10 @@ function animationLoop(animal, speedInPixels) {
 	animal.draw();
 }
 
+function pause() {
+	stop = !stop;
+}
+
 function changeAnimal(index) {
 	animal = animals[index].create();
 
@@ -55,9 +56,8 @@ function changeAnimal(index) {
 }
 
 window.setup = () => {
-
 	const snake = new AnimalDescriptor(
-		new Point(width / 2, height / 2),
+		new Point(windowWidth / 2, windowHeight / 2),
 		[
 			new SegmentDescriptor(0, 26, [new EyeDescriptor(115, 22, 10, new Color(0, 0, 0))]),
 			new SegmentDescriptor(26, 29),
@@ -125,7 +125,7 @@ window.setup = () => {
 		6
 	);
 	const lizard = new AnimalDescriptor(
-		new Point(width / 2, height / 2),
+		new Point(windowWidth / 2, windowHeight / 2),
 		[
 			new SegmentDescriptor(0, 26, [new EyeDescriptor(115, 22, 10, new Color(0, 0, 0))]),
 			new SegmentDescriptor(26, 29),
@@ -211,7 +211,7 @@ window.setup = () => {
 		3
 	);
 	const fish = new AnimalDescriptor(
-		new Point(width / 2, height / 2),
+		new Point(windowWidth / 2, windowHeight / 2),
 		[
 			new SegmentDescriptor(0, 18, [new EyeDescriptor(100, 16, 20, new Color(0, 0, 100), Bodypart.BOTTOM)]),
 			new SegmentDescriptor(22, 30),
@@ -240,9 +240,22 @@ window.setup = () => {
 	strokeCap(ROUND);
 	strokeJoin(ROUND);
 	stroke(0);
-	createCanvas(width, height);
+
+	const canvas = createCanvas(windowWidth, windowHeight);
+	canvas.parent("canvasHolder");
 
 	background(20, 80, 20);
 	animal.draw();
 	setInterval(() => { animationLoop(animal, Math.floor((60 / FPS) * animal.speed)); }, Math.floor(1000 / FPS));
 }
+
+window.windowResized = () => {
+	resizeCanvas(windowWidth, windowHeight);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+	document.getElementById("snakeButton").addEventListener("click", () => changeAnimal(0));
+	document.getElementById("fishButton").addEventListener("click", () => changeAnimal(1));
+	document.getElementById("lizardButton").addEventListener("click", () => changeAnimal(2));
+	document.getElementById("pauseButton").addEventListener("click", pause);
+});
